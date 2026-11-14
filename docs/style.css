@@ -151,6 +151,7 @@ button.row:hover{background:var(--surface-2)}
 .w.lw{border-bottom:2px solid color-mix(in srgb,var(--accent) 45%,transparent)}
 .w.unk{background:var(--warn-bg);box-shadow:0 0 0 1px var(--warn)}
 .w.sel{background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent)}
+.partbar{display:flex;justify-content:space-between;min-height:1.4em;margin-top:-8px}
 .gram{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px}
 .gram summary{font-weight:700;cursor:pointer}
 .gram div{padding-top:8px;line-height:1.6;font-size:calc(var(--read-fs,18.5px) - 3px)}

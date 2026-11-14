@@ -406,7 +406,7 @@ function closeSheet(){sheet.hidden=true;sheet.innerHTML="";document.body.classLi
 /* ---------- перечитать текст ---------- */
 function openText(ref){
   if(ref.startsWith("lesson:"))return go({k:"read",ref,unk:new Map()});
-  const [,id,n]=ref.split(":");openBook(id,+n);
+  const [,id,n,p]=ref.split(":");openBook(id,+n,+(p||0));
 }
 function vRead(){
   const m=mode,l=L[m.ref.slice(7)];if(!l)return quit();
@@ -421,9 +421,9 @@ function vRead(){
 function vBooks(){
   const bs=[...S.books].sort((a,b)=>b.created_at.localeCompare(a.created_at));
   main.innerHTML=`<div class="toolbar"><span class="meta" style="margin-right:auto">📚 ${bs.length}</span><button class="btn" id="addB">＋ EPUB</button></div>
-    <div class="list">${bs.length?bs.map(b=>`<button class="row" data-book="${b.id}"><span class="ic">📖</span><span class="tx"><span class="nm en">${esc(b.title)}</span><span class="meta">${esc(b.author||"")}</span></span><span class="badge b-date">${b.pos+1} / ${b.chapters}</span></button>`).join(""):`<div class="row meta">—</div>`}</div>`;
+    <div class="list">${bs.length?bs.map(b=>`<button class="row" data-book="${b.id}"><span class="ic">📖</span><span class="tx"><span class="nm en">${esc(b.title)}</span><span class="meta">${esc(b.author||"")}</span></span><span class="badge b-date">${posOf(b).n+1} / ${b.chapters}</span></button>`).join(""):`<div class="row meta">—</div>`}</div>`;
   $("#addB").onclick=()=>$("#epub").click();
-  main.querySelectorAll("[data-book]").forEach(x=>x.onclick=()=>{const b=S.books.find(b=>b.id===x.dataset.book);openBook(b.id,b.pos)});
+  main.querySelectorAll("[data-book]").forEach(x=>x.onclick=()=>{const b=S.books.find(b=>b.id===x.dataset.book);const q=posOf(b);openBook(b.id,q.n,q.p)});
 }
 $("#epub").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(f)try{await importEpub(f)}catch(err){console.error(err);toast("Не удалось открыть книгу: "+(err.message||err))}};
 
@@ -502,29 +502,54 @@ async function importEpub(file){
   }catch(e){await sb.from("t_books").delete().eq("id",b.id);throw e}
   S.books.push(b);render();toast(`📖 ${title}: ${plural(chs.length,"глава","главы","глав")}, ~${Math.round(words/1000)} тыс. слов`);
 }
-async function openBook(id,n){
+// главы делятся на части ~5 минут чтения (~450 слов) по границам абзацев; короткий хвост приклеивается
+const PART_WORDS=450;
+function partsOf(body){
+  const ps=body.split("\n"),out=[];let cur=[],n=0;
+  for(const p of ps){cur.push(p);n+=p.split(/\s+/).length;if(n>=PART_WORDS){out.push({ps:cur,w:n});cur=[];n=0}}
+  if(cur.length){if(out.length&&n<PART_WORDS/3){const l=out[out.length-1];l.ps.push(...cur);l.w+=n}else out.push({ps:cur,w:n})}
+  return out.length?out:[{ps:[""],w:0}];
+}
+// место в книге: старое pos = номер главы; новое = 1e6 + глава*1000 + часть
+const posOf=b=>b.pos>=1e6?{n:Math.floor((b.pos-1e6)/1000),p:(b.pos-1e6)%1000}:{n:b.pos||0,p:0};
+async function openBook(id,n,p=0){
   const b=S.books.find(x=>x.id===id);if(!b)return toast("Книга не найдена");
   n=Math.max(0,Math.min(b.chapters-1,n||0));
-  mode={k:"book",id,n,ch:null,unk:new Map()};render();
+  const keep=mode&&mode.k==="book"&&mode.id===id&&mode.n===n&&mode.ch?mode.ch:null;
+  mode={k:"book",id,n,p,ch:keep,parts:keep?partsOf(keep.body):null,unk:new Map()};
+  if(keep){fixPart();render();scrollTo(0,0);savePos(b);return}
+  render();
   const ch=await W(sb.from("t_chapters").select("*").eq("book_id",id).eq("n",n).single()).catch(()=>null);
   if(!mode||mode.k!=="book"||mode.n!==n)return;
-  mode.ch=ch;render();scrollTo(0,0);
-  if(b.pos!==n){b.pos=n;sb.from("t_books").update({pos:n}).eq("id",id).then(()=>{})}
+  mode.ch=ch;if(ch){mode.parts=partsOf(ch.body);fixPart()}
+  render();scrollTo(0,0);savePos(b);
+}
+function fixPart(){const m=mode;if(m.p<0)m.p=m.parts.length-1;m.p=Math.max(0,Math.min(m.parts.length-1,m.p))}
+function savePos(b){const v=1e6+mode.n*1000+mode.p;if(b.pos!==v){b.pos=v;sb.from("t_books").update({pos:v}).eq("id",b.id).then(()=>{})}}
+function bookGo(d){
+  const m=mode,b=S.books.find(x=>x.id===m.id),np=m.p+d;
+  if(m.parts&&np>=0&&np<m.parts.length)return openBook(m.id,m.n,np);
+  if(d<0&&m.n>0)return openBook(m.id,m.n-1,-1);
+  if(d>0&&m.n<b.chapters-1)return openBook(m.id,m.n+1,0);
+  if(d>0)quit();
 }
 function vBook(){
-  const m=mode,b=S.books.find(x=>x.id===m.id);
+  const m=mode,b=S.books.find(x=>x.id===m.id),P=m.parts,part=P&&P[m.p];
+  const first=m.n===0&&m.p===0,last=P&&m.n===b.chapters-1&&m.p===P.length-1;
   const top=`<div class="topbar"><button class="icon" id="lx" title="Закрыть">✕</button><span class="tt en">${esc(b.title)}</span>
-    <button class="icon" id="bp" title="Предыдущая глава" ${m.n>0?"":"disabled"}>‹</button><span class="meta">${m.n+1} / ${b.chapters}</span><button class="icon" id="bn" title="Следующая глава" ${m.n<b.chapters-1?"":"disabled"}>›</button></div>`;
-  main.innerHTML=top+(m.ch?`<h1 class="story-t en">${esc(m.ch.title)}</h1>${reader(m.ch.body.split("\n"))}${rateBox(m.unk.size)}
+    <button class="icon" id="bp" title="Назад" ${first?"disabled":""}>‹</button><span class="meta">${m.n+1}${P?`.${m.p+1}`:""} / ${b.chapters}</span><button class="icon" id="bn" title="Дальше" ${last?"disabled":""}>›</button></div>`;
+  main.innerHTML=top+(m.ch?`<h1 class="story-t en">${esc(m.ch.title)}</h1>
+    <div class="partbar"><span class="meta">${P.length>1?`${m.p+1} / ${P.length}`:""}</span><span class="meta">≈ ${Math.max(1,Math.round(part.w/90))} мин</span></div>
+    ${reader(part.ps)}${rateBox(m.unk.size)}
     <div class="foot"><button class="btn danger" id="bdel" title="Удалить книгу">🗑</button></div>`:`<div class="empty"><b>Загружаю…</b></div>`);
   $("#lx").onclick=quit;
-  $("#bp").onclick=()=>openBook(m.id,m.n-1);
-  $("#bn").onclick=()=>openBook(m.id,m.n+1);
+  $("#bp").onclick=()=>bookGo(-1);
+  $("#bn").onclick=()=>bookGo(1);
   if(!m.ch)return;
   bindReader(`book:${m.id}`);
   bindRate(async r=>{
-    await rateText(`book:${m.id}:${m.n}`,`${b.title} — ${m.ch.title}`.slice(0,200),r);
-    if(m.n<b.chapters-1)openBook(m.id,m.n+1);else quit();
+    await rateText(`book:${m.id}:${m.n}:${m.p}`,`${b.title} — ${m.ch.title}${P.length>1?` (${m.p+1}/${P.length})`:""}`.slice(0,200),r);
+    bookGo(1);
   });
   $("#bdel").onclick=async()=>{
     if(!confirm(`Удалить «${b.title}» из Таверны? Карточки слов останутся.`))return;
@@ -567,7 +592,7 @@ const HELP=[
 ["Читалка","Щёлкни на любое слово — внизу появится перевод (если слово есть в словаре или в твоих карточках) и кнопка 🌐 переводчика. <b>❓ Не понимаю</b>: если слова ещё нет в карточках, оно станет карточкой вместе с предложением из текста (перевод можно вписать сразу или потом в «Слова»); если уже есть — начнёт приходить чаще. Повторный щелчок по «Не понимаю» снимает отметку. Подчёркнутые слова — слова урока."],
 ["Перечитывание текстов","После каждого текста ты отмечаешь, насколько он понятен. 😕 не поняла — текст вернётся завтра, 🤔 частично — через 3 дня, 😊 понятно — через неделю, потом всё реже. Тексты, которые пора перечитать, — на «Сегодня» в разделе «Перечитать». Как с песней: раз за разом понятно всё больше."],
 ["Ассоциация 💭","У каждой карточки есть поле «Ассоциация»: что тебе напоминает это слово — строчка из песни, сцена из игры или книги, картинка в голове. Она видна после «Показать». Изменить — щёлкнуть на 💭 или открыть слово в «Слова»."],
-["Книги","＋ EPUB — загрузить книгу на английском (файл EPUB). Книга раскладывается по главам и хранится только в твоей базе. Читать — как в уроке: перевод по щелчку, ❓ не понимаю. В конце главы — оценка, и открывается следующая. Место, где остановилась, запоминается. 🗑 внизу главы — удалить книгу (карточки слов останутся)."],
+["Книги","＋ EPUB — загрузить книгу на английском (файл EPUB). Книга раскладывается по главам и хранится только в твоей базе. Читать — как в уроке: перевод по щелчку, ❓ не понимаю. Длинные главы поделены на части примерно по 5 минут чтения (около 450 слов): вверху видно «часть 2 / 5» и примерное время. ‹ › — листать части и главы. В конце части — оценка, и открывается следующая; каждая часть возвращается на перечитывание отдельно. Место, где остановилась, запоминается. 🗑 внизу главы — удалить книгу (карточки слов останутся)."],
 ["Тренировка 🎴","Кнопка 🎴 на «Сегодня» — повторить слова в любой момент, не дожидаясь срока: до 20 слов, сначала те, что чаще забываешь. В «Слова» 🎴 тренирует найденные поиском слова (например, набери «fae»). Тренировка не сдвигает сроки, только «Не помню» делает слово чаще."],
 ["Картинки и смайлики","У слов из уроков — нарисованные картинки. Для остальных можно выбрать смайлик в окне слова (полоска под полем «Смайлик») или вписать любой свой."],
 ["Словарь","Перевод по щелчку берётся из твоих карточек, словаря уроков и большого словаря (~18 тыс. слов) из открытого Викисловаря (kaikki.org, Wiktionary, лицензия CC-BY-SA) с частотным списком FrequencyWords (Hermit Dave, CC-BY-SA). Переводы там бывают неточными — свой перевод можно вписать в карточку."],
