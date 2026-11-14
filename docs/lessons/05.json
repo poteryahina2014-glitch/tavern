@@ -1,0 +1,38 @@
+{
+"id":"05","n":5,"title":"Яд","en":"Poison","emoji":"🧪",
+"words":[
+ {"w":"poison","tr":"яд; отравить","e":"🧪","ex":"This girl did not poison my wine.","ex_ru":"Эта девушка не отравляла моё вино."},
+ {"w":"blame","tr":"винить, обвинять","e":"👉","ex":"I blame the girl.","ex_ru":"Я виню девчонку."},
+ {"w":"kneel","tr":"встать на колени","e":"🧎","ex":"Kneel before the prince.","ex_ru":"На колени перед принцем."},
+ {"w":"vanish","tr":"исчезнуть","e":"💨","ex":"The servant had vanished.","ex_ru":"Слуга исчез."},
+ {"w":"truth","tr":"правда, истина","e":"🕊️","ex":"So hear the truth.","ex_ru":"Так услышьте правду."},
+ {"w":"mercy","tr":"милосердие, пощада","e":"🙏","ex":"I will show mercy tonight.","ex_ru":"Сегодня я проявлю милосердие."},
+ {"w":"prove","tr":"доказать","e":"✅","ex":"Find the real poisoner in three days and prove it.","ex_ru":"Найди настоящего отравителя за три дня и докажи это."},
+ {"w":"guilty","tr":"виновный, виноватый","e":"⚖️","ex":"If you cannot, she is guilty, and she dies.","ex_ru":"Если не сможешь — она виновна, и она умрёт."},
+ {"w":"suspect","tr":"подозревать; подозреваемый","e":"🔍","ex":"Who did she suspect?","ex_ru":"Кого она подозревала?"},
+ {"w":"secret","tr":"тайна, секрет; тайный","e":"🤐","ex":"I know a secret.","ex_ru":"Я знаю одну тайну."}
+],
+"story":[
+ "Where the wine touched the floor, the stone began to smoke. Someone screamed.",
+ "“Poison,” Ash said quietly.",
+ "Corin stood up from his throne. “The mortal knew,” he said, and his voice filled the hall. “How did she know, unless she brought it herself? I blame the girl. Guards, take her.”",
+ "Two guards grabbed Mira's arms. “Kneel before the prince,” one of them ordered, and pushed her down.",
+ "“I saw a servant,” Mira said. “He put something in the cup. Look for him!”",
+ "But the servant had vanished. Nobody remembered his face. Everybody had worn a mask.",
+ "“She is lying,” Corin said. “Mortals lie all the time. It is the only thing they do well.”",
+ "Ash stepped between Mira and the throne. “Then let me speak. You all know I cannot lie. So hear the truth: this girl did not poison my wine. She saved my life.”",
+ "The hall was silent. A fae cannot lie — everyone knew that. Corin's smile disappeared.",
+ "“Words are not proof, brother,” he said at last. “But I will show mercy tonight. Find the real poisoner in three days and prove it. If you cannot, she is guilty, and she dies.”",
+ "Later, alone in her room, Mira could not stop shaking. Who did she suspect? The servant, of course. But who sent him?",
+ "There was a soft knock at the door. Lirra came in, pale and nervous.",
+ "“I know a secret,” she whispered. “But not here. Meet me in the forest at midnight.”"
+],
+"gloss":{"touched":"коснулось","floor":"пол","stone":"камень","began":"начал","smoke":"дымиться; дым","screamed":"закричал","quietly":"тихо","throne":"трон","filled":"наполнил","hall":"зал","unless":"если только не","herself":"сама","guards":"стражники","grabbed":"схватили","arms":"руки","ordered":"приказал","pushed":"толкнул","servant":"слуга","cup":"кубок, чашка","remembered":"помнил","worn":"носили (wear — worn)","mask":"маска","lying":"лжёт","lie":"лгать","stepped":"шагнул","speak":"говорить","saved":"спасла","silent":"безмолвный, тихий","disappeared":"исчезла","words":"слова","proof":"доказательство","poisoner":"отравитель","real":"настоящий","shaking":"дрожать","sent":"послал (send — sent)","soft":"тихий, мягкий","knock":"стук","pale":"бледная","nervous":"нервная","whispered":"прошептала","meet":"встреться, встретимся","midnight":"полночь","forest":"лес","mira's":"Миры","corin's":"Корина","everybody":"все","alone":"одна"},
+"questions":[
+ {"q":"What happened when the wine touched the floor?","o":["The stone began to smoke","The wine turned into water","Flowers grew"],"a":0},
+ {"q":"Whom did Corin blame?","o":["Mira","Lirra","Ash"],"a":0},
+ {"q":"Why did everyone believe Ash's words?","o":["A fae cannot lie","He was the king","He showed the bottle"],"a":0},
+ {"q":"How many days does Ash have to find the poisoner?","o":["Three","Seven","One"],"a":0}
+],
+"grammar":{"title":"«Уже было»: had + 3-я форма (Past Perfect)","text":"Когда в рассказе о прошлом говорят о том, что случилось <b>ещё раньше</b>, используют <b>had + третья форма глагола</b>.<br><br><i>But the servant <b>had vanished</b></i> — «Но слуга (к тому моменту уже) исчез».<br><i>Everybody <b>had worn</b> a mask</i> — «Все (тогда) были в масках».<br><i>anything she <b>had ever worn</b></i> — «всё, что она когда-либо носила».<br><br>Третья форма у обычных глаголов — с <b>-ed</b> (vanish → vanished), у неправильных — своя: wear → wore → <b>worn</b>, see → saw → <b>seen</b>, go → went → <b>gone</b>."}
+}

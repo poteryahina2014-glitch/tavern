@@ -1,0 +1,37 @@
+{
+"id":"08","n":8,"title":"Предательница","en":"The Traitor","emoji":"🗝️",
+"words":[
+ {"w":"chain","tr":"цепь","e":"⛓️","ex":"They put chains on her wrists.","ex_ru":"Они надели ей цепи на запястья."},
+ {"w":"cage","tr":"клетка","e":"🪤","ex":"An iron cage hung from the ceiling.","ex_ru":"С потолка свисала железная клетка."},
+ {"w":"loyal","tr":"верный, преданный","e":"🛡️","ex":"I never said who I was loyal to.","ex_ru":"Я никогда не говорила, кому я верна."},
+ {"w":"reveal","tr":"раскрыть, показать","e":"🎭","ex":"Today I will reveal the truth.","ex_ru":"Сегодня я раскрою правду."},
+ {"w":"traitor","tr":"предатель, предательница","e":"🐍","ex":"Ash's mortal girl is a traitor.","ex_ru":"Смертная девчонка Эша — предательница."},
+ {"w":"rescue","tr":"спасти; спасение","e":"🛟","ex":"He will try to rescue you.","ex_ru":"Он попытается тебя спасти."},
+ {"w":"revenge","tr":"месть","e":"🔥","ex":"I will have my revenge at last.","ex_ru":"Наконец-то я отомщу."},
+ {"w":"lock","tr":"замок; запереть","e":"🔒","ex":"They locked the cage.","ex_ru":"Они заперли клетку."},
+ {"w":"key","tr":"ключ","e":"🔑","ex":"They took the key with them.","ex_ru":"Они забрали ключ с собой."},
+ {"w":"vow","tr":"клятва; поклясться","e":"💍","ex":"I made a vow.","ex_ru":"Я дала клятву."}
+],
+"story":[
+ "On the third day, the guards came for Mira before sunrise. They put chains on her wrists and took her down into the dark under the hill, where an iron cage hung from the ceiling.",
+ "“Iron,” said a voice. “No fae can touch it, so no fae can open it. Not even my brother.”",
+ "Corin stepped out of the shadows. Next to him stood Lirra.",
+ "“You,” Mira breathed. “You were the servant with the bottle. You wore a glamour.”",
+ "Lirra smiled. It was not a kind smile. “I told you I could help you. I never said who I was loyal to.”",
+ "“Was it all a trick?”",
+ "“Of course,” said Corin. “The poison, the wolf — all of it. My brother has a weakness, and its name is mortal kindness. Today I will reveal the truth to the whole court: Ash's mortal girl is a traitor who tried to kill him. He will try to rescue you, and I will have my revenge at last.”",
+ "They locked the cage and took the key with them.",
+ "Mira sat in the dark for a long time. Then she looked at her hands. Iron could not hurt her. The chains were iron. The cage was iron. The lock was iron.",
+ "And every child in her village knew how to open an old iron lock with a hairpin.",
+ "She smiled for the first time that day.",
+ "“I made a vow,” she whispered to nobody. “Seven days. I am not going to die on the third.”"
+],
+"gloss":{"third":"третий","guards":"стражники","sunrise":"рассвет","wrists":"запястья","took":"повели, взяли (take — took)","dark":"темнота","hill":"холм","iron":"железный; железо","hung":"висела (hang — hung)","ceiling":"потолок","voice":"голос","stepped":"шагнул","shadows":"тени","next":"рядом (next to)","stood":"стояла","breathed":"выдохнула","servant":"слуга","bottle":"бутылочка","wore":"носила (wear — wore)","glamour":"чары, морок (волшебная маска фейри)","smiled":"улыбнулась","told":"говорила (tell — told)","trick":"уловка, обман","course":"конечно (of course)","poison":"яд","wolf":"волк","weakness":"слабость","kindness":"доброта","whole":"весь","court":"двор","tried":"пыталась","locked":"заперли","sat":"сидела","hurt":"ранить, причинить боль","chains":"цепи","village":"деревня","hairpin":"шпилька","whispered":"прошептала","seven":"семь","going":"собираюсь (am going to)","lirra":"Лирра (имя)","ash's":"Эша","mortal":"смертная"},
+"questions":[
+ {"q":"Where did the guards take Mira?","o":["Into the dark under the hill","Back to the tavern","To the throne"],"a":0},
+ {"q":"Who was the servant with the bottle?","o":["Lirra","Corin","Bram"],"a":0},
+ {"q":"Why can no fae open the cage?","o":["It is made of iron","It has no door","It is under water"],"a":0},
+ {"q":"How will Mira open the lock?","o":["With a hairpin","With the key","With magic"],"a":0}
+],
+"grammar":{"title":"Пересказ чужих слов: said / told","text":"Когда пересказывают слова, время обычно «сдвигается» в прошлое.<br><br>Лирра раньше сказала: <i>“I <b>can</b> help you.”</i><br>Теперь она пересказывает: <i>I told you I <b>could</b> help you</i> — «Я говорила, что <b>могу</b> тебе помочь» (can → could).<br><br>Так же: <b>will → would</b>, <b>is → was</b>, <b>am → was</b>.<br><br><b>say</b> — просто «сказать»: <i>I never <b>said</b> who I was loyal to</i>.<br><b>tell</b> — «сказать кому-то», после него нужен человек: <i>I <b>told you</b>…</i>"}
+}

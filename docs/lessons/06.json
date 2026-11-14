@@ -1,0 +1,38 @@
+{
+"id":"06","n":6,"title":"Полночь в Терновом лесу","en":"Midnight in the Thornwood","emoji":"🐺",
+"words":[
+ {"w":"midnight","tr":"полночь","e":"🕛","ex":"At midnight Mira left the court.","ex_ru":"В полночь Мира покинула двор."},
+ {"w":"moonlight","tr":"лунный свет","e":"🌕","ex":"The forest was silver with moonlight.","ex_ru":"Лес серебрился в лунном свете."},
+ {"w":"shadow","tr":"тень","e":"👤","ex":"Every shadow looked like a monster.","ex_ru":"Каждая тень казалась чудовищем."},
+ {"w":"footsteps","tr":"шаги","e":"👣","ex":"Then Mira heard footsteps behind her.","ex_ru":"Потом Мира услышала шаги позади."},
+ {"w":"wolf","tr":"волк","e":"🐺","ex":"Between the trees stood a wolf.","ex_ru":"Между деревьями стоял волк."},
+ {"w":"branch","tr":"ветка","e":"🌿","ex":"Branches hit her face and caught her hair.","ex_ru":"Ветки хлестали её по лицу и цеплялись за волосы."},
+ {"w":"breath","tr":"дыхание","e":"😮‍💨","ex":"Her breath was loud in her ears.","ex_ru":"Её дыхание громко отдавалось в ушах."},
+ {"w":"chase","tr":"гнаться, преследовать","e":"🏃","ex":"It chased her deeper into the Thornwood.","ex_ru":"Он гнал её всё глубже в Терновый лес."},
+ {"w":"scream","tr":"кричать; крик","e":"😱","ex":"The wolf screamed.","ex_ru":"Волк закричал."},
+ {"w":"escape","tr":"сбежать; побег","e":"🚪","ex":"She wanted you to escape.","ex_ru":"Она хотела, чтобы ты сбежала."}
+],
+"story":[
+ "At midnight Mira left the court through a small door near the kitchens. The forest was silver with moonlight, and every shadow looked like a monster.",
+ "Lirra was not at the old oak. Nobody was.",
+ "Then Mira heard footsteps behind her. Slow, heavy footsteps — and they were not human.",
+ "She turned. Between the trees stood a wolf, bigger than a horse, with eyes like burning coals. It was made of shadow and smoke.",
+ "Mira ran.",
+ "Branches hit her face and caught her hair. Her breath was loud in her ears. The wolf did not hurry. It was playing with her, the way a cat plays with a mouse. It chased her deeper and deeper into the Thornwood.",
+ "She fell over a root and hit the ground hard. The wolf was there, right above her. She could feel its cold breath.",
+ "Mira did the only thing she could. She pulled the iron ring from her finger and pushed it into the wolf's open mouth.",
+ "The wolf screamed — a terrible, almost human sound — and turned into smoke.",
+ "For a long moment Mira lay in the leaves, shaking. Then a hand touched her shoulder, and she screamed too.",
+ "“It's me,” Ash said. His face was white in the moonlight. “You went into the forest at midnight. Alone. Are you trying to die before Corin kills you?”",
+ "“Lirra said she knew a secret—”",
+ "“Lirra serves my brother,” Ash said, and his eyes went dark. “She did not want to help you. She wanted you to escape — straight into the wolf's mouth.”"
+],
+"gloss":{"left":"покинула (leave — left)","court":"двор","small":"маленький","kitchens":"кухни","forest":"лес","silver":"серебряный","monster":"чудовище","oak":"дуб","heard":"услышала","behind":"позади","slow":"медленные","heavy":"тяжёлые","human":"человеческий","turned":"обернулась; превратился","trees":"деревья","stood":"стоял","bigger":"больше","horse":"лошадь","burning":"горящие","coals":"угли","made":"сделан","smoke":"дым","ran":"побежала","hit":"ударили; ударилась","caught":"цеплялись (catch — caught)","hair":"волосы","loud":"громкий","ears":"уши","hurry":"спешить","playing":"играл","plays":"играет","mouse":"мышь","deeper":"глубже","thornwood":"Терновый лес","fell":"упала","root":"корень","ground":"земля","hard":"сильно","right":"прямо","above":"над","feel":"чувствовать","pulled":"сняла, потянула","ring":"кольцо","finger":"палец","pushed":"засунула","terrible":"ужасный","almost":"почти","sound":"звук","moment":"мгновение","lay":"лежала (lie — lay)","leaves":"листья","shaking":"дрожа","touched":"коснулась","shoulder":"плечо","alone":"одна","trying":"пытаешься","kills":"убьёт","serves":"служит","straight":"прямо","mouth":"пасть, рот","wolf's":"волка","secret":"тайна","lirra":"Лирра (имя)"},
+"questions":[
+ {"q":"Who was waiting for Mira at the old oak?","o":["Nobody","Lirra","Ash"],"a":0},
+ {"q":"What was the wolf made of?","o":["Shadow and smoke","Iron","Fire and ice"],"a":0},
+ {"q":"How did Mira stop the wolf?","o":["She pushed the iron ring into its mouth","She hit it with a branch","She climbed a tree"],"a":0},
+ {"q":"Whom does Lirra really serve?","o":["Corin","Ash","Bram"],"a":0}
+],
+"grammar":{"title":"Страдательный залог: was + 3-я форма","text":"Когда важно не <b>кто</b> сделал, а <b>что</b> с чем-то сделали или из чего оно, используют <b>be + третья форма</b>.<br><br><i>It <b>was made</b> of shadow and smoke</i> — «Он был сделан из тени и дыма».<br><i>The debt <b>will be paid</b></i> — «Долг будет оплачен» (урок 2).<br><br>Сравни: <i>She <b>made</b> a bargain</i> — «Она заключила сделку» (кто-то делает) и <i>A bargain <b>was made</b></i> — «Сделка была заключена» (с ней что-то сделали).<br><br>Ещё: <b>the way</b> — «так, как»: <i>the way a cat plays with a mouse</i> — «как кошка играет с мышью»."}
+}

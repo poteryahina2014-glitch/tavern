@@ -1,0 +1,37 @@
+{
+"id":"04","n":4,"title":"Пир в масках","en":"The Masked Feast","emoji":"🎭",
+"words":[
+ {"w":"feast","tr":"пир, праздничный ужин","e":"🍖","ex":"On the second night there was a feast in the great hall.","ex_ru":"На вторую ночь в большом зале был пир."},
+ {"w":"gown","tr":"(длинное) платье, бальное платье","e":"👗","ex":"The gown was more beautiful than anything she had ever worn.","ex_ru":"Платье было красивее всего, что она когда-либо носила."},
+ {"w":"mask","tr":"маска","e":"🎭","ex":"Everyone wears a mask tonight.","ex_ru":"Сегодня все в масках."},
+ {"w":"dance","tr":"танцевать; танец","e":"💃","ex":"Dance with me.","ex_ru":"Потанцуй со мной."},
+ {"w":"wine","tr":"вино","e":"🍷","ex":"Don't drink the wine.","ex_ru":"Не пей вино."},
+ {"w":"servant","tr":"слуга, служанка","e":"🧑‍🍳","ex":"A servant was pouring something into Ash's wine.","ex_ru":"Слуга что-то подливал в вино Эша."},
+ {"w":"glance","tr":"(быстрый) взгляд; взглянуть","e":"👀","ex":"She caught Corin's glance from the throne.","ex_ru":"Она поймала взгляд Корина с трона."},
+ {"w":"blush","tr":"краснеть, румянец","e":"😳","ex":"Mira felt her face blush red under the mask.","ex_ru":"Мира почувствовала, как её лицо краснеет под маской."},
+ {"w":"jealous","tr":"ревнивый, завистливый","e":"😒","ex":"Some looked jealous.","ex_ru":"Некоторые выглядели завистливо."},
+ {"w":"admire","tr":"восхищаться, любоваться","e":"🤩","ex":"Some of them admired her dress.","ex_ru":"Некоторые восхищались её платьем."}
+],
+"story":[
+ "On the second night there was a feast in the great hall. Lirra came to Mira's room with a silver gown and a mask made of white feathers.",
+ "“Everyone wears a mask tonight,” she said. “Even the prince. It is easier to lie when nobody can see your face.”",
+ "Mira looked in the mirror. The gown was more beautiful than anything she had ever worn. She looked like a stranger — a fae lady, not a girl from a tavern.",
+ "The hall was brighter than before. The tables were full of golden fruit, honey cakes and dark red wine. Servants with green leaves in their hair moved between the guests.",
+ "“Don't eat anything,” Ash whispered behind her. “And don't drink the wine. Mortals who drink fae wine dance until they die.”",
+ "“Then why are we here?”",
+ "“To be seen.” He held out his hand. “Dance with me.”",
+ "She did. Ash danced like water, light and fast, and for a few minutes Mira forgot to be afraid. Other fae watched them. Some of them admired her dress. Some looked jealous.",
+ "Then she caught Corin's glance from the throne. He was not watching the dance. He was watching his brother's cup.",
+ "Mira turned. A servant was pouring something from a tiny bottle into Ash's wine.",
+ "Ash lifted the cup. Without thinking, Mira hit his hand, and the wine fell to the floor.",
+ "The music stopped. Everyone stared at her. Mira felt her face blush red under the mask."
+],
+"gloss":{"great":"большой, великий","feathers":"перья","easier":"легче","lie":"лгать","mirror":"зеркало","worn":"носила (wear — worn)","ever":"когда-либо","brighter":"ярче","fruit":"фрукты","honey":"мёд","cakes":"пирожные, лепёшки","leaves":"листья","guests":"гости","whispered":"прошептал","anything":"что-нибудь, ничего","until":"пока не","seen":"увиденным (see — seen)","held":"протянул (hold — held)","danced":"танцевал","light":"лёгкий","forgot":"забыла","afraid":"бояться (be afraid)","caught":"поймала","pouring":"наливал","tiny":"крошечный","bottle":"бутылочка","lifted":"поднял","without":"без","thinking":"думая","hit":"ударила","fell":"упало","stopped":"остановилась","stared":"уставились","felt":"почувствовала","red":"красный","lady":"леди, дама","lirra":"Лирра (имя)","corin's":"Корина","ash's":"Эша","mira's":"Миры","prince":"принц","dress":"платье"},
+"questions":[
+ {"q":"What did Lirra bring to Mira?","o":["A silver gown and a mask","A sword and a cloak","A cup of wine"],"a":0},
+ {"q":"What happens to mortals who drink fae wine?","o":["They dance until they die","They fall asleep for a year","They can see in the dark"],"a":0},
+ {"q":"What was Corin watching?","o":["His brother's cup","The dance","The door"],"a":0},
+ {"q":"Why did Mira hit Ash's hand?","o":["A servant put something in his wine","She was angry with him","She wanted to dance with Corin"],"a":0}
+],
+"grammar":{"title":"Сравнения: -er / more, the -est / the most","text":"Короткие прилагательные получают <b>-er</b> («более») и <b>the -est</b> («самый»): bright → <b>brighter</b> → <b>the brightest</b>, easy → <b>easier</b> (y → i), big → <b>bigger</b>.<br><br>Длинные — через <b>more</b> и <b>the most</b>: <i>more beautiful</i> — «красивее», <i>the most beautiful</i> — «самый красивый».<br><br>«Чем» — <b>than</b>: <i>The hall was <b>brighter than</b> before</i> — «Зал был ярче, чем раньше». <i>The gown was <b>more beautiful than</b> anything</i> — «Платье было красивее всего».<br><br>Исключения: good → <b>better</b> → <b>the best</b>, bad → <b>worse</b> → <b>the worst</b>."}
+}

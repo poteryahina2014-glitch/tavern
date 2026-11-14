@@ -139,12 +139,12 @@ button.row:hover{background:var(--surface-2)}
 .opt.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);opacity:1}
 .opt.bad{background:var(--danger-bg);border-color:var(--danger);color:var(--danger);opacity:1}
 .qbox{display:flex;flex-direction:column;gap:6px}
-.qbox .q{font-weight:600;font-size:16.5px;font-family:var(--f-read)}
+.qbox .q{font-weight:600;font-size:calc(var(--read-fs,18.5px) - 2px);font-family:var(--f-read)}
 .qbox .opt{text-align:left;min-height:46px;padding:10px 12px}
 
 /* читалка */
 .story-t{font-family:var(--f-display);font-size:22px;margin:6px 0 0;text-align:center;color:var(--accent);letter-spacing:.02em}
-.reader{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:8px 18px;font-size:18.5px;line-height:1.75;box-shadow:var(--shadow)}
+.reader{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:8px 18px;font-size:var(--read-fs,18.5px);line-height:1.75;box-shadow:var(--shadow)}
 .reader p{margin:12px 0}
 .w{cursor:pointer;border-radius:4px;transition:background .1s}
 .w:hover{background:var(--surface-2)}
@@ -153,7 +153,10 @@ button.row:hover{background:var(--surface-2)}
 .w.sel{background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent)}
 .gram{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px}
 .gram summary{font-weight:700;cursor:pointer}
-.gram div{padding-top:8px;line-height:1.6}
+.gram div{padding-top:8px;line-height:1.6;font-size:calc(var(--read-fs,18.5px) - 3px)}
+.fsrow{display:flex;gap:8px;align-items:center}
+.fsrow b{min-width:60px;text-align:center}
+.fsdemo{height:220px;overflow:auto;flex:none}
 .rate{display:flex;flex-direction:column;gap:8px;align-items:stretch;text-align:center;padding-top:6px}
 .rate .q{font-weight:700;font-size:16px}
 .rate .btn{font-size:22px}
@@ -203,6 +206,6 @@ body.has-sheet .toast{bottom:220px}
   .rcard{height:330px}
   .rbtns:not(.three):not(.two){min-height:124px;align-content:start}
   .rbtns.two{grid-template-columns:1fr 1fr;min-height:124px;align-content:start}
-  .reader{padding:4px 14px;font-size:17.5px}
+  .reader{padding:4px 14px;font-size:var(--read-fs,17.5px)}
   .steps span{font-size:10.5px}
 }

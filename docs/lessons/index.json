@@ -1,5 +1,10 @@
 [
  {"id":"01","n":1,"title":"Таверна у леса","en":"The Crooked Lantern","emoji":"🍺"},
  {"id":"02","n":2,"title":"Сделка с фейри","en":"A Bargain","emoji":"🤝"},
- {"id":"03","n":3,"title":"Двор под холмом","en":"The Court Beneath the Hill","emoji":"🌹"}
+ {"id":"03","n":3,"title":"Двор под холмом","en":"The Court Beneath the Hill","emoji":"🌹"},
+ {"id":"04","n":4,"title":"Пир в масках","en":"The Masked Feast","emoji":"🎭"},
+ {"id":"05","n":5,"title":"Яд","en":"Poison","emoji":"🧪"},
+ {"id":"06","n":6,"title":"Полночь в Терновом лесу","en":"Midnight in the Thornwood","emoji":"🐺"},
+ {"id":"07","n":7,"title":"Проклятие","en":"The Curse","emoji":"🩸"},
+ {"id":"08","n":8,"title":"Предательница","en":"The Traitor","emoji":"🗝️"}
 ]

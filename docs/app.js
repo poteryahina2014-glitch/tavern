@@ -571,10 +571,29 @@ const HELP=[
 ["Тренировка 🎴","Кнопка 🎴 на «Сегодня» — повторить слова в любой момент, не дожидаясь срока: до 20 слов, сначала те, что чаще забываешь. В «Слова» 🎴 тренирует найденные поиском слова (например, набери «fae»). Тренировка не сдвигает сроки, только «Не помню» делает слово чаще."],
 ["Картинки и смайлики","У слов из уроков — нарисованные картинки. Для остальных можно выбрать смайлик в окне слова (полоска под полем «Смайлик») или вписать любой свой."],
 ["Словарь","Перевод по щелчку берётся из твоих карточек, словаря уроков и большого словаря (~18 тыс. слов) из открытого Викисловаря (kaikki.org, Wiktionary, лицензия CC-BY-SA) с частотным списком FrequencyWords (Hermit Dave, CC-BY-SA). Переводы там бывают неточными — свой перевод можно вписать в карточку."],
+["Настройки ⚙","Размер текста меняет только английские тексты: главы уроков, книги, вопросы и грамматику. Кнопки и меню остаются как были. На телефоне и компьютере размер свой. ↺ — вернуть обычный."],
 ["Слова","Все твои карточки: поиск, ＋ добавить своё слово, щелчок — изменить перевод, пример, смайлик, ассоциацию или удалить. Справа — когда слово придёт на повторение. «Выучено» на «Сегодня» — слова, которые помнишь дольше трёх недель."],
 ];
 $("#help").onclick=()=>openModal(`<h2>Справка</h2><div class="help">${HELP.map(([t,x])=>`<details><summary>${t}</summary><p>${x}</p></details>`).join("")}</div><div class="mfoot"><span class="sp"></span><button class="btn" id="hc">Закрыть</button></div>`,"help");
 document.addEventListener("click",e=>{if(e.target.id==="hc")closeModal()});
+
+/* ---------- настройки: размер текста для чтения (только тексты, не интерфейс; на каждом устройстве свой) ---------- */
+const FS_MIN=14,FS_MAX=28;
+function applyFs(){const v=ls.get("fs",null);if(v)document.documentElement.style.setProperty("--read-fs",v+"px");else document.documentElement.style.removeProperty("--read-fs")}
+applyFs();
+$("#gear").onclick=()=>{
+  const cur=()=>ls.get("fs",null)||parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--read-fs"))||(innerWidth<=420?17.5:18.5);
+  openModal(`<h2>⚙ Настройки</h2>
+    <div class="fld"><label>Размер текста</label>
+      <div class="fsrow"><button class="btn" id="fsm" title="Меньше">A−</button><b id="fsv"></b><button class="btn" id="fsp" title="Больше">A+</button><button class="btn" id="fsr" title="Как было">↺</button></div></div>
+    <article class="reader en fsdemo"><p>The Crooked Lantern was a small tavern at the edge of the Thornwood. Nobody went into the forest after dark.</p></article>
+    <div class="mfoot"><span class="sp"></span><button class="btn" id="hc">Закрыть</button></div>`);
+  const show=()=>{$("#fsv").textContent=Math.round(cur())+" px"};
+  const set=v=>{v=Math.max(FS_MIN,Math.min(FS_MAX,v));ls.set("fs",v);applyFs();show()};
+  $("#fsm").onclick=()=>set(cur()-1);$("#fsp").onclick=()=>set(cur()+1);
+  $("#fsr").onclick=()=>{try{localStorage.removeItem("tav:fs")}catch(e){}applyFs();show()};
+  show();
+};
 
 /* ---------- окна, сообщения ---------- */
 function openModal(html,cls=""){

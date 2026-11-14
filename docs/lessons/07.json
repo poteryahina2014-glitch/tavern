@@ -1,0 +1,39 @@
+{
+"id":"07","n":7,"title":"Проклятие","en":"The Curse","emoji":"🩸",
+"words":[
+ {"w":"wound","tr":"рана; ранить","e":"🩹","ex":"There was a long wound across his arm.","ex_ru":"На его руке была длинная рана."},
+ {"w":"bleed","tr":"кровоточить, истекать кровью","e":"🩸","ex":"It was still bleeding.","ex_ru":"Она всё ещё кровоточила."},
+ {"w":"tremble","tr":"дрожать","e":"🫨","ex":"Her hands were trembling.","ex_ru":"Её руки дрожали."},
+ {"w":"scar","tr":"шрам","e":"〰️","ex":"She saw old scars.","ex_ru":"Она увидела старые шрамы."},
+ {"w":"curse","tr":"проклятие; проклясть","e":"🌀","ex":"Our mother cursed us when we were children.","ex_ru":"Наша мать прокляла нас, когда мы были детьми."},
+ {"w":"heal","tr":"заживать, исцелять","e":"🌿","ex":"Will the wound heal?","ex_ru":"Рана заживёт?"},
+ {"w":"gentle","tr":"нежный, мягкий","e":"🪶","ex":"His voice was gentle.","ex_ru":"Его голос был мягким."},
+ {"w":"kiss","tr":"поцеловать; поцелуй","e":"💋","ex":"They were close enough to kiss.","ex_ru":"Они были так близко, что могли бы поцеловаться."},
+ {"w":"confess","tr":"признаться","e":"💬","ex":"I must confess something.","ex_ru":"Я должен кое в чём признаться."},
+ {"w":"forgive","tr":"простить","e":"🤍","ex":"Then you are forgiven.","ex_ru":"Тогда ты прощён."}
+],
+"story":[
+ "Only when they were back in her room did Mira see the blood. The wolf had reached Ash before it reached her. There was a long wound across his arm, and it was still bleeding.",
+ "“Sit,” she ordered. “I worked in a tavern for six years. I know how to clean a cut.”",
+ "He looked surprised, but he sat. Her hands were trembling as she washed the wound. Under the fresh blood she saw old scars — dozens of thin silver lines.",
+ "“Who did this to you?”",
+ "For a long time he did not answer. Then he said, “If I tell you the truth, you will be in even more danger.”",
+ "“I am already in danger. Tell me.”",
+ "“Our mother cursed us when we were children. Corin and me. As long as we both live, neither of us can wear the crown. One of us must die. That is why he wants to kill me.” He touched the scars. “And that is why, many times, I have tried to kill him.”",
+ "Mira was quiet. She thought about Bram, and her grandmother, and the coin in her pocket.",
+ "“Will the wound heal?” she asked finally.",
+ "“Fae heal fast.” His voice was gentle. “Mortals do not. You should hate me. I brought you here.”",
+ "“I know.” She tied a clean cloth around his arm. “I don't.”",
+ "He took her hand. For a moment they were very close, close enough to kiss. Then he let go.",
+ "“I must confess something,” he said. “I did not choose you because you can touch iron. I chose you because, at the tavern, you were kind to a stranger. I had forgotten what that looks like.”",
+ "“Then you are forgiven,” she said. “For now.”"
+],
+"gloss":{"blood":"кровь","reached":"добрался до","across":"поперёк, через","arm":"рука","still":"всё ещё","ordered":"приказала","worked":"работала","years":"лет, годы","clean":"промыть; чистый","cut":"порез","surprised":"удивлённым","sat":"сел","washed":"промывала","under":"под","fresh":"свежий","dozens":"десятки","thin":"тонкие","lines":"линии","answer":"отвечал","truth":"правда","even":"даже","danger":"опасность","already":"уже","mother":"мать","children":"дети","as long as":"пока","both":"оба","neither":"ни один (из)","wear":"носить","crown":"корона","why":"почему","tried":"пытался","quiet":"молчалива, тихая","thought":"думала (think — thought)","bram":"Брам (имя)","grandmother":"бабушка","coin":"монета","pocket":"карман","finally":"наконец","fast":"быстро","hate":"ненавидеть","tied":"завязала","cloth":"ткань","around":"вокруг","close":"близко","enough":"достаточно","let":"отпустил (let go)","choose":"выбрал","chose":"выбрал","kind":"добра","stranger":"незнакомцу","forgotten":"забыл (forget — forgotten)","looks":"выглядит","forgiven":"прощён"},
+"questions":[
+ {"q":"Why does Mira know how to clean a cut?","o":["She worked in a tavern for six years","Her grandmother was a healer","Ash taught her"],"a":0},
+ {"q":"What did their mother do to Ash and Corin?","o":["She cursed them","She gave them a crown","She sent them to the mortal world"],"a":0},
+ {"q":"Why can't the brothers wear the crown?","o":["They both live","They are too young","Mira has the crown"],"a":0},
+ {"q":"Why did Ash choose Mira?","o":["She was kind to a stranger","She can touch iron","She knew his name"],"a":0}
+],
+"grammar":{"title":"Если…: if + настоящее, will + глагол","text":"Условие о будущем: <b>if</b> + настоящее время, а в главной части — <b>will</b>.<br><br><i><b>If</b> I <b>tell</b> you the truth, you <b>will be</b> in even more danger</i> — «Если я скажу тебе правду, ты будешь в ещё большей опасности».<br><br>Внимание: после <b>if</b> по-английски <b>не</b> ставят will, хотя по-русски там будущее («если скажу» = <i>if I tell</i>).<br><br>Ещё из главы: <b>have tried</b> — «пытался (и это важно сейчас)»: <i>I <b>have tried</b> to kill him</i>. Это время <b>Present Perfect</b>: have/has + третья форма."}
+}
