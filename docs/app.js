@@ -124,20 +124,39 @@ async function rateText(ref,title,r){
 }
 
 /* ---------- вход: тот же аккаунт, что в «Задачах» ---------- */
+let lastEmail="";
 function renderLogin(msg="",err=false){
   $("#top").hidden=true;
   main.innerHTML=`<form class="acard" id="login">
     <h2>🍺 Таверна</h2>
-    <div class="fld"><label for="email">Почта</label><input id="email" type="email" autocomplete="email" required></div>
+    <div class="fld"><label for="email">Почта</label><input id="email" type="email" autocomplete="email" required value="${esc(lastEmail)}"></div>
     <div class="fld"><label for="pass">Пароль</label><input id="pass" type="password" autocomplete="current-password" required></div>
-    <button class="btn pri" type="submit">Войти</button>
-    <p class="meta" style="margin:0;min-height:1.4em;${err?"color:var(--danger)":""}">${esc(msg)}</p>
+    <div class="lrow"><button class="btn pri" type="submit">Войти</button><button class="btn" type="button" id="signup">Зарегистрироваться</button></div>
+    <p class="meta" style="margin:0;min-height:2.8em;${err?"color:var(--danger)":""}">${esc(msg)}</p>
   </form>`;
+  const creds=()=>{lastEmail=$("#email").value.trim();return {email:lastEmail,password:$("#pass").value}};
   $("#login").addEventListener("submit",async e=>{
     e.preventDefault();
-    const {error}=await sb.auth.signInWithPassword({email:$("#email").value.trim(),password:$("#pass").value});
-    if(error)renderLogin(/invalid login/i.test(error.message)?"Неверная почта или пароль":error.message,true);
+    const {error}=await sb.auth.signInWithPassword(creds());
+    if(error)renderLogin(authErr(error.message),true);
   });
+  $("#signup").onclick=async()=>{
+    const c=creds();
+    if(!$("#login").reportValidity())return;
+    if(c.password.length<6)return renderLogin("Пароль — минимум 6 символов",true);
+    const {data,error}=await sb.auth.signUp({...c,options:{emailRedirectTo:location.origin+location.pathname}});
+    if(error)return renderLogin(authErr(error.message),true);
+    if(data&&data.user&&Array.isArray(data.user.identities)&&!data.user.identities.length)return renderLogin("Такая почта уже зарегистрирована — просто войди",true);
+    if(!data.session)renderLogin(`✉ Письмо отправлено на ${c.email}. Открой его, подтверди почту и войди.`);
+  };
+}
+function authErr(m){
+  if(/invalid login/i.test(m))return "Неверная почта или пароль";
+  if(/not confirmed/i.test(m))return "Почта ещё не подтверждена — открой письмо";
+  if(/already registered/i.test(m))return "Такая почта уже зарегистрирована — просто войди";
+  if(/signups? not allowed|disabled/i.test(m))return "Регистрация сейчас закрыта";
+  if(/rate limit/i.test(m))return "Слишком много попыток, подожди немного";
+  return m;
 }
 
 /* ---------- отрисовка ---------- */
