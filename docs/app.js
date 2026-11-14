@@ -21,9 +21,10 @@ const ivlLabel=n=>n<=0?"сегодня":n===1?"завтра":n<30?plural(n,"де
 function dueLabel(d){const n=daysBetween(today(),d);return n<=0?"сегодня":n===1?"завтра":"через "+plural(n,"день","дня","дней")}
 
 /* ---------- словарь и уроки (файлы) ---------- */
-let LESSONS=[];const L={},DICT=new Map();
+let LESSONS=[],PICS={},BIG=null;const L={},DICT=new Map();
 async function loadContent(){
-  const [core,idx]=await Promise.all([fetch("data/core.json").then(r=>r.json()),fetch("lessons/index.json").then(r=>r.json())]);
+  const [core,idx,pics]=await Promise.all([fetch("data/core.json").then(r=>r.json()),fetch("lessons/index.json").then(r=>r.json()),fetch("data/pics.json").then(r=>r.json()).catch(()=>({}))]);
+  PICS=pics;
   for(const [k,v] of Object.entries(core))DICT.set(k,v);
   LESSONS=idx;
   const all=await Promise.all(idx.map(x=>fetch(`lessons/${x.id}.json`).then(r=>r.json())));
@@ -49,14 +50,23 @@ function forms(w){
   if(/est$/.test(w)){add(w.slice(0,-3));add(w.slice(0,-2))}
   return r;
 }
+// большой словарь (Викисловарь, ~1 МБ) — грузится один раз, когда понадобится в читалке
+let bigP=null;
+function loadBig(){return bigP||(bigP=fetch("data/dict.json").then(r=>r.json()).then(d=>{BIG=d}).catch(()=>{bigP=null}))}
 const cardOf=w=>S&&S.cards.find(c=>c.word===w);
-// {key, tr, card}: сначала её карточки, потом словарь
+// {key, tr, card}: сначала её карточки, потом словарь уроков, потом большой словарь (с неправильными формами: went → go)
 function lookup(w){
   const fs=forms(w);
   for(const f of fs){const c=cardOf(f);if(c)return {key:f,tr:c.tr,card:c}}
   for(const f of fs)if(DICT.has(f))return {key:f,tr:DICT.get(f),card:null};
+  if(BIG){
+    for(const f of fs)if(BIG.w[f])return {key:f,tr:BIG.w[f],card:null};
+    for(const f of fs){const b=BIG.f[f];if(b){const c=cardOf(b);if(c)return {key:b,tr:c.tr,card:c};const t=DICT.get(b)||BIG.w[b];if(t)return {key:b,tr:t,card:null}}}
+  }
   return {key:fs[0].replace(/'s$/,""),tr:"",card:null};
 }
+// картинка слова (нарисованная) или смайлик
+const pic=(word,emoji)=>PICS[word]?`<span class="pic">${PICS[word]}</span>`:esc(emoji||"");
 
 /* ---------- база ---------- */
 const sb=supabase.createClient(CONFIG.url,CONFIG.key);
@@ -70,7 +80,7 @@ async function load(){
     ]);
     const bad=rs.find(r=>r.error);if(bad)throw bad.error;
     S={cards:rs[0].data,texts:rs[1].data,lessons:rs[2].data,books:rs[3].data,log:rs[4].data};
-    render();
+    render();loadBig();
   }catch(e){
     console.error(e);
     main.innerHTML=`<div class="empty"><b>База ещё не готова</b>Supabase → SQL Editor → <code>001_tavern.sql</code><br><small>${esc(e.message||"")}</small></div>`;
@@ -156,12 +166,13 @@ function vToday(){
   <section class="hero">
     <div class="hnum">${due.length||"✓"}</div>
     <div class="htx"><b>${due.length?plural(due.length,"слово","слова","слов"):"На сегодня всё"}</b><span class="meta">${due.length?"на повторение":`завтра: ${tomorrow}`}</span></div>
-    <button class="btn pri" id="goReview" ${due.length?"":"disabled"}>Повторить</button>
+    <div class="hbtns"><button class="btn pri" id="goReview" ${due.length?"":"disabled"}>Повторить</button><button class="btn" id="goTrain" title="Тренировка" ${S.cards.length?"":"disabled"}>🎴</button></div>
   </section>
   <div class="stats"><span>🗝️ ${S.cards.length}<small>слов</small></span><span>⭐ ${learned}<small>выучено</small></span><span>✔ ${todayLog}<small>сегодня</small></span></div>
   ${tx.length?`<section class="sec"><h2>📖 Перечитать</h2><div class="list">${tx.map(t=>`<button class="row" data-text="${esc(t.ref)}"><span class="ic">${t.rating==="no"?"😕":t.rating==="part"?"🤔":"😊"}</span><span class="tx"><span class="nm">${esc(textTitle(t))}</span><span class="meta">прочитано ${plural(t.reads,"раз","раза","раз")}</span></span></button>`).join("")}</div></section>`:""}
   ${nl?`<section class="sec"><h2>📜 Следующий урок</h2><div class="list">${lessonRow(nl)}</div></section>`:""}`;
   $("#goReview").onclick=startReview;
+  $("#goTrain").onclick=()=>startTrain(S.cards);
   bindRows();
 }
 function lessonRow(x){
@@ -179,17 +190,18 @@ function vLessons(){
 }
 let wq=ls.get("wq","");
 function vWords(){
-  main.innerHTML=`<div class="toolbar"><input id="wq" type="search" placeholder="🔍" value="${esc(wq)}" aria-label="Поиск"><button class="btn" id="addW" title="Добавить слово">＋</button></div>
+  main.innerHTML=`<div class="toolbar"><input id="wq" type="search" placeholder="🔍" value="${esc(wq)}" aria-label="Поиск"><button class="btn" id="trainW" title="Тренировка">🎴</button><button class="btn" id="addW" title="Добавить слово">＋</button></div>
     <section class="sec"><h2 id="wcount"></h2><div class="list" id="wlist"></div></section>`;
   const draw=()=>{
     const q=wq.trim().toLowerCase();
     const rows=S.cards.filter(c=>!q||c.word.includes(q)||(c.tr||"").toLowerCase().includes(q)).sort((a,b)=>a.word.localeCompare(b.word));
     $("#wcount").textContent=`🗝️ ${rows.length}`;
-    $("#wlist").innerHTML=rows.length?rows.map(c=>`<button class="row" data-card="${c.id}"><span class="ic">${esc(c.emoji||"·")}</span><span class="tx"><span class="nm en">${esc(c.word)}</span><span class="meta">${esc(c.tr||"—")}</span></span><span class="badge ${c.due<=today()?"b-now":"b-date"}">${dueLabel(c.due)}</span></button>`).join(""):`<div class="row meta">—</div>`;
+    $("#wlist").innerHTML=rows.length?rows.map(c=>`<button class="row" data-card="${c.id}"><span class="ic">${pic(c.word,c.emoji)||"·"}</span><span class="tx"><span class="nm en">${esc(c.word)}</span><span class="meta">${esc(c.tr||"—")}</span></span><span class="badge ${c.due<=today()?"b-now":"b-date"}">${dueLabel(c.due)}</span></button>`).join(""):`<div class="row meta">—</div>`;
     $("#wlist").querySelectorAll("[data-card]").forEach(b=>b.onclick=()=>editCard(S.cards.find(c=>c.id===b.dataset.card)));
   };
   $("#wq").oninput=e=>{wq=e.target.value;ls.set("wq",wq);draw()};
   $("#addW").onclick=()=>editCard(null);
+  $("#trainW").onclick=()=>{const q=wq.trim().toLowerCase();startTrain(S.cards.filter(c=>!q||c.word.includes(q)||(c.tr||"").toLowerCase().includes(q)))};
   draw();
 }
 
@@ -198,7 +210,15 @@ function startReview(){
   const q=shuffle(dueCards()).sort((a,b)=>a.due.localeCompare(b.due)).map(c=>c.id);
   if(q.length)go({k:"review",q,i:0,shown:false,total:q.length,again:new Set()});
 }
+// тренировка в любой момент: сроки не меняются, только «не помню» делает слово чаще
+function startTrain(list){
+  if(!list.length)return toast("Нет слов");
+  const weak=[...list].sort((a,b)=>(b.lapses-a.lapses)||(a.ivl-b.ivl)||(Math.random()-.5)).slice(0,20);
+  const q=shuffle(weak).map(c=>c.id);
+  go({k:"review",practice:true,q,i:0,shown:false,total:q.length,again:new Set()});
+}
 const GR=[["Не помню","g0"],["Трудно","g1"],["Помню","g2"],["Легко","g3"]];
+const GT=[["Не помню","g0",0],["Помню","g2",2]];
 function hl(text,word){ // выделить слово в примере
   return esc(text).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>forms(t).includes(word)?`<b>${t}</b>`:t);
 }
@@ -212,18 +232,18 @@ function vReview(){
   }
   const c=S.cards.find(x=>x.id===m.q[m.i]);if(!c){m.i++;return vReview()}
   const prog=Math.min(m.i,m.total);
-  main.innerHTML=`<div class="topbar"><button class="icon" id="rx" title="Закрыть">✕</button><div class="bar"><i style="width:${prog/m.total*100}%"></i></div><span class="meta">${prog} / ${m.total}</span></div>
+  main.innerHTML=`<div class="topbar"><button class="icon" id="rx" title="Закрыть">✕</button><div class="bar"><i style="width:${prog/m.total*100}%"></i></div><span class="meta">${m.practice?"🎴 ":""}${prog} / ${m.total}</span></div>
   <section class="rcard">
     <div class="rword en">${esc(c.word)}</div>
     <div class="rback" ${m.shown?"":"style=visibility:hidden"}>
-      <div class="remo">${esc(c.emoji||"")}</div>
+      <div class="remo">${pic(c.word,c.emoji)}</div>
       <div class="rtr">${esc(c.tr)||`<span class="meta">—</span>`}</div>
       ${c.ex?`<div class="rex en">${hl(c.ex,c.word)}</div>`:""}
       ${c.ex_ru?`<div class="meta">${esc(c.ex_ru)}</div>`:""}
       <button class="rnote" id="rnote" title="Изменить">${c.note?`💭 ${esc(c.note)}`:"💭 ✎"}</button>
     </div>
   </section>
-  <div class="rbtns">${m.shown?GR.map(([t,cl],g)=>`<button class="btn ${cl}" data-g="${g}">${t}<small>${m.again.has(c.id)?"":ivlLabel(nextCard(c,g).ivl)}</small></button>`).join(""):`<button class="btn pri wide" id="show">Показать</button>`}</div>`;
+  <div class="rbtns${m.practice&&m.shown?" two":""}">${m.shown&&m.practice?GT.map(([t,cl,g])=>`<button class="btn ${cl}" data-g="${g}">${t}<small></small></button>`).join(""):m.shown?GR.map(([t,cl],g)=>`<button class="btn ${cl}" data-g="${g}">${t}<small>${m.again.has(c.id)?"":ivlLabel(nextCard(c,g).ivl)}</small></button>`).join(""):`<button class="btn pri wide" id="show">Показать</button>`}</div>`;
   $("#rx").onclick=quit;
   $("#rnote").onclick=()=>editCard(c,()=>vReview());
   if(!m.shown)$("#show").onclick=()=>{m.shown=true;vReview()};
@@ -231,7 +251,8 @@ function vReview(){
 }
 async function grade(c,g){
   const m=mode;
-  if(!m.again.has(c.id)){ // второй показ «не помню» в той же сессии — только тренировка
+  if(m.practice){if(g===0&&!m.again.has(c.id))updCard(c,forgot(c)).catch(()=>{})}
+  else if(!m.again.has(c.id)){ // второй показ «не помню» в той же сессии — только тренировка
     const patch=nextCard(c,g);
     updCard(c,patch).catch(()=>{});
     sb.from("t_log").insert({card_id:c.id,grade:g}).then(r=>{if(!r.error)S.log.push({day:today(),card_id:c.id,grade:g})});
@@ -242,7 +263,7 @@ async function grade(c,g){
 document.addEventListener("keydown",e=>{
   if(!mode||mode.k!=="review"||$(".modal")||/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
   if(e.key===" "||e.key==="Enter"){if(!mode.shown){e.preventDefault();mode.shown=true;vReview()}}
-  else if(mode.shown&&/^[1-4]$/.test(e.key)){const c=S.cards.find(x=>x.id===mode.q[mode.i]);if(c)grade(c,+e.key-1)}
+  else if(mode.shown&&/^[1-4]$/.test(e.key)){const c=S.cards.find(x=>x.id===mode.q[mode.i]);let g=+e.key-1;if(mode.practice){if(g>1)return;g=g?2:0}if(c)grade(c,g)}
 });
 
 /* ---------- урок: слова → упражнения → история → вопросы → оценка ---------- */
@@ -256,7 +277,7 @@ function vLesson(){
   const m=mode,l=L[m.id];
   const top=`<div class="topbar"><button class="icon" id="lx" title="Закрыть">✕</button><span class="tt">${l.emoji} ${esc(l.title)}</span></div>${stepsBar(m.step)}`;
   if(m.step===0){
-    main.innerHTML=top+`<div class="list">${l.words.map(w=>`<div class="row wrow"><span class="ic">${w.e}</span><span class="tx"><span class="nm en">${esc(w.w)} <span class="tr">— ${esc(w.tr)}</span></span><span class="meta en">${hl(w.ex,w.w)}</span><span class="meta">${esc(w.ex_ru)}</span></span></div>`).join("")}</div>
+    main.innerHTML=top+`<div class="list">${l.words.map(w=>`<div class="row wrow"><span class="ic">${pic(w.w,w.e)}</span><span class="tx"><span class="nm en">${esc(w.w)} <span class="tr">— ${esc(w.tr)}</span></span><span class="meta en">${hl(w.ex,w.w)}</span><span class="meta">${esc(w.ex_ru)}</span></span></div>`).join("")}</div>
       <div class="foot"><button class="btn pri" id="next">Дальше</button></div>`;
     $("#next").onclick=()=>{m.ex=buildEx(l);m.xi=0;m.step=1;vLesson()};
   }else if(m.step===1)return vExercise(top);
@@ -306,7 +327,7 @@ function vExercise(top){
   if(m.xi>=m.ex.length){finishEx(l);return}
   const x=m.ex[m.xi],answered=x.pick!=null,right=answered&&x.pick===x.w;
   const prompt=x.t==="tr"
-    ?`<div class="xw en">${esc(x.w.w)}</div><div class="xe">${x.w.e}</div>`
+    ?`<div class="xw en">${esc(x.w.w)}</div><div class="xe">${pic(x.w.w,x.w.e)}</div>`
     :`<div class="xs en">${gapped(x.w.ex,x.w.w)}</div><div class="meta">${esc(x.w.ex_ru)}</div>`;
   main.innerHTML=top+`<div class="xbar"><div class="bar"><i style="width:${m.xi/m.ex.length*100}%"></i></div><span class="meta">${m.xi} / ${m.ex.length}</span></div>
     <section class="xbox">${prompt}</section>
@@ -349,10 +370,11 @@ function sentenceOf(span){
   return txt.slice(0,200);
 }
 function openWord(span,src){
+  if(!BIG&&!lookup(span.dataset.w).tr){loadBig().then(()=>{if(BIG)openWord(span,src)})}
   main.querySelectorAll(".w.sel").forEach(x=>x.classList.remove("sel"));span.classList.add("sel");
   const raw=span.dataset.w,f=lookup(raw),marked=mode.unk.has(f.key),c=f.card||cardOf(f.key);
   sheet.innerHTML=`<div class="wrap sh-in">
-    <div class="sw"><b class="en">${esc(raw)}</b>${f.key!==raw.toLowerCase()?`<span class="meta en">→ ${esc(f.key)}</span>`:""}<span class="semo">${esc(c&&c.emoji||"")}</span><button class="icon" id="sx" title="Закрыть">✕</button></div>
+    <div class="sw"><b class="en">${esc(raw)}</b>${f.key!==raw.toLowerCase()?`<span class="meta en">→ ${esc(f.key)}</span>`:""}<span class="semo">${c?pic(c.word,c.emoji):""}</span><button class="icon" id="sx" title="Закрыть">✕</button></div>
     ${f.tr?`<div class="str">${esc(f.tr)}</div>`:`<input id="str" class="str-in" placeholder="перевод" value="">`}
     <div class="meta smeta">${c?`🗝️ ${dueLabel(c.due)}`:""}</div>
     <div class="srow"><a class="btn" target="_blank" rel="noopener" href="https://translate.google.com/?sl=en&tl=ru&op=translate&text=${encodeURIComponent(raw)}" title="Переводчик">🌐</a>
@@ -514,11 +536,13 @@ function vBook(){
 }
 
 /* ---------- карточка: изменить / добавить ---------- */
+const EMOJI="🍺 🍻 🍷 🍞 🧀 🍖 🍲 🍎 🔥 🕯️ 🏰 🏛️ 🛖 🏠 🚪 🛏️ 🪑 👑 💍 💎 🪙 💰 📜 🗝️ 🗡️ ⚔️ 🏹 🛡️ 🪓 🧪 🔮 ✨ 🌙 ⭐ ☀️ 🌧️ ❄️ 🌲 🌹 🥀 🌿 🍂 🌊 ⛰️ 🐺 🐉 🦉 🐍 🐎 🦌 🐈‍⬛ 🐦‍⬛ 🦋 🧚 🧝 🧙 👸 🤴 💂 🧍 👁️ 👄 ✋ 🤝 🙇 🤫 💋 ❤️ 💔 😠 😢 😨 😊 😳 😏 🗣️ 👂 🎭 🃏 ⚠️ ☠️ 🩸 ⛓️ 🧭 📖 ✉️ 🎶 💃 🏃 🚶 👀 ⏳ 🐾".split(" ");
 function editCard(c,after){
   const v=c||{word:"",tr:"",emoji:"",ex:"",ex_ru:"",note:""};
   openModal(`<h2>${c?"🗝️ "+esc(c.word):"＋"}</h2>
     <div class="grid2"><div class="fld"><label>English</label><input id="cw" class="en" value="${esc(v.word)}" ${c?"":"autofocus"}></div>
     <div class="fld"><label>Смайлик</label><input id="ce" value="${esc(v.emoji||"")}" maxlength="8"></div></div>
+    <div class="emos" id="emos">${PICS[v.word]?`<span class="emo-pic" title="Картинка">${PICS[v.word]}</span>`:""}${EMOJI.map(e=>`<button type="button" data-e="${e}">${e}</button>`).join("")}</div>
     <div class="fld"><label>Перевод</label><input id="ct" value="${esc(v.tr)}"></div>
     <div class="fld"><label>Пример</label><textarea id="cx" class="en" rows="2">${esc(v.ex||"")}</textarea></div>
     <div class="fld"><label>Перевод примера</label><input id="cxr" value="${esc(v.ex_ru||"")}"></div>
@@ -526,6 +550,7 @@ function editCard(c,after){
     <p class="meta mmeta">${c?`🔁 ${c.reps} · ✗ ${c.lapses} · ${dueLabel(c.due)}`:""}</p>
     <div class="mfoot">${c?`<button class="btn danger" id="cdel" title="Удалить">🗑</button>`:""}<span class="sp"></span><button class="btn" id="cc">Отмена</button><button class="btn pri" id="cs">Сохранить</button></div>`);
   $("#cc").onclick=closeModal;
+  $("#emos").onclick=e=>{const b=e.target.closest("[data-e]");if(b)$("#ce").value=b.dataset.e};
   $("#cs").onclick=async()=>{
     const row={word:$("#cw").value.trim().toLowerCase(),tr:$("#ct").value.trim(),emoji:$("#ce").value.trim()||null,ex:$("#cx").value.trim()||null,ex_ru:$("#cxr").value.trim()||null,note:$("#cn").value.trim()||null};
     if(!row.word)return $("#cw").focus();
@@ -543,6 +568,9 @@ const HELP=[
 ["Перечитывание текстов","После каждого текста ты отмечаешь, насколько он понятен. 😕 не поняла — текст вернётся завтра, 🤔 частично — через 3 дня, 😊 понятно — через неделю, потом всё реже. Тексты, которые пора перечитать, — на «Сегодня» в разделе «Перечитать». Как с песней: раз за разом понятно всё больше."],
 ["Ассоциация 💭","У каждой карточки есть поле «Ассоциация»: что тебе напоминает это слово — строчка из песни, сцена из игры или книги, картинка в голове. Она видна после «Показать». Изменить — щёлкнуть на 💭 или открыть слово в «Слова»."],
 ["Книги","＋ EPUB — загрузить книгу на английском (файл EPUB). Книга раскладывается по главам и хранится только в твоей базе. Читать — как в уроке: перевод по щелчку, ❓ не понимаю. В конце главы — оценка, и открывается следующая. Место, где остановилась, запоминается. 🗑 внизу главы — удалить книгу (карточки слов останутся)."],
+["Тренировка 🎴","Кнопка 🎴 на «Сегодня» — повторить слова в любой момент, не дожидаясь срока: до 20 слов, сначала те, что чаще забываешь. В «Слова» 🎴 тренирует найденные поиском слова (например, набери «fae»). Тренировка не сдвигает сроки, только «Не помню» делает слово чаще."],
+["Картинки и смайлики","У слов из уроков — нарисованные картинки. Для остальных можно выбрать смайлик в окне слова (полоска под полем «Смайлик») или вписать любой свой."],
+["Словарь","Перевод по щелчку берётся из твоих карточек, словаря уроков и большого словаря (~18 тыс. слов) из открытого Викисловаря (kaikki.org, Wiktionary, лицензия CC-BY-SA) с частотным списком FrequencyWords (Hermit Dave, CC-BY-SA). Переводы там бывают неточными — свой перевод можно вписать в карточку."],
 ["Слова","Все твои карточки: поиск, ＋ добавить своё слово, щелчок — изменить перевод, пример, смайлик, ассоциацию или удалить. Справа — когда слово придёт на повторение. «Выучено» на «Сегодня» — слова, которые помнишь дольше трёх недель."],
 ];
 $("#help").onclick=()=>openModal(`<h2>Справка</h2><div class="help">${HELP.map(([t,x])=>`<details><summary>${t}</summary><p>${x}</p></details>`).join("")}</div><div class="mfoot"><span class="sp"></span><button class="btn" id="hc">Закрыть</button></div>`,"help");
