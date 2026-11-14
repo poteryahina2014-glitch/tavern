@@ -1,0 +1,39 @@
+{
+"id":"03","n":3,"title":"Двор под холмом","en":"The Court Beneath the Hill","emoji":"🌹",
+"words":[
+ {"w":"court","tr":"двор (королевский)","e":"🏰","ex":"Welcome to the Court of Thorns.","ex_ru":"Добро пожаловать ко Двору Шипов."},
+ {"w":"throne","tr":"трон","e":"🪑","ex":"At the end of the hall stood a throne.","ex_ru":"В конце зала стоял трон."},
+ {"w":"hall","tr":"зал","e":"🏛️","ex":"The hall was full of light and music.","ex_ru":"Зал был полон света и музыки."},
+ {"w":"guard","tr":"стражник; охранять","e":"💂","ex":"The guards near the throne did not move.","ex_ru":"Стражники у трона не шевелились."},
+ {"w":"bow","tr":"кланяться; поклон","e":"🙇","ex":"“Bow,” Ash said quietly.","ex_ru":"«Поклонись», — тихо сказал Эш."},
+ {"w":"whisper","tr":"шептать; шёпот","e":"🤫","ex":"Beautiful fae were dancing, laughing and whispering.","ex_ru":"Прекрасные фейри танцевали, смеялись и шептались."},
+ {"w":"trust","tr":"доверять; доверие","e":"🫱","ex":"Smile, but trust no one.","ex_ru":"Улыбайся, но не доверяй никому."},
+ {"w":"enemy","tr":"враг","e":"⚔️","ex":"They become enemies so easily.","ex_ru":"Они так легко становятся врагами."},
+ {"w":"betray","tr":"предать","e":"🗡️","ex":"Someone was going to betray someone.","ex_ru":"Кто-то собирался кого-то предать."},
+ {"w":"dangerous","tr":"опасный","e":"☠️","ex":"Friends are dangerous here.","ex_ru":"Друзья здесь опасны."}
+],
+"story":[
+ "On the first night, the stranger took Mira through the forest to a hill covered in white flowers. He touched the grass, and a door opened in the hill.",
+ "“Welcome to the Court of Thorns,” he said. “Smile, but trust no one. Not even me.”",
+ "“Do I at least get your name?” Mira asked.",
+ "“You can call me Ash.” It was not his real name. She knew that.",
+ "Inside, the hall was full of light and music. Beautiful fae were dancing, laughing and whispering. Everyone was watching Mira. A mortal girl in a simple dress — she was something new.",
+ "At the end of the hall stood a throne made of black wood and roses. A tall fae with a golden crown sat on it. His eyes were silver too.",
+ "“My brother, Prince Corin,” Ash said quietly. “Bow.”",
+ "Mira bowed. The guards near the throne did not move, but their hands were on their swords.",
+ "“Brother,” said Corin with a cold smile. “You brought a pet.”",
+ "“I brought a friend.”",
+ "“Friends are dangerous here. They become enemies so easily.”",
+ "Later that night, a young fae girl with green hair came to Mira's room. “I am Lirra,” she whispered. “I serve Prince Corin, but I hate him. I can help you.”",
+ "Mira wanted to trust her. She really did. But she remembered Ash's words, and she said nothing about the iron ring.",
+ "Somewhere in this court, someone was going to betray someone. Mira only hoped it would not be her."
+],
+"gloss":{"hill":"холм","covered":"покрытый","flowers":"цветы","welcome":"добро пожаловать","thorns":"шипы, тернии","least":"хотя бы (at least)","ash":"Эш (имя; ash — пепел, ясень)","full":"полный","dancing":"танцевали","laughing":"смеялись","whispering":"шептались","watching":"смотрели, наблюдали","simple":"простой","dress":"платье","end":"конец","wood":"дерево (материал)","roses":"розы","prince":"принц","corin":"Корин (имя)","quietly":"тихо","bowed":"поклонилась","swords":"мечи","sword":"меч","pet":"домашний зверёк, питомец","easily":"легко","lirra":"Лирра (имя)","serve":"служу","wanted":"хотела","remembered":"вспомнила","hoped":"надеялась","enemies":"враги","guards":"стражники","going":"собирался (was going to)","ring":"кольцо","mira's":"Миры","ash's":"Эша","hands":"руки"},
+"questions":[
+ {"q":"How did Ash open the door to the court?","o":["He touched the grass","He used a gold key","He said a magic word"],"a":0},
+ {"q":"Who is Corin?","o":["Ash's brother","Lirra's father","The innkeeper"],"a":0},
+ {"q":"What did Corin call Mira?","o":["A pet","A queen","An enemy"],"a":0},
+ {"q":"Why did Mira say nothing about the ring?","o":["She remembered: trust no one","She forgot about it","Lirra already knew"],"a":0}
+],
+"grammar":{"title":"Длительное прошедшее: was / were + -ing","text":"Когда действие <b>шло</b> в какой-то момент в прошлом, используют <b>was / were + глагол с -ing</b>: <i>fae <b>were dancing</b></i> — «фейри танцевали» (в тот момент), <i>everyone <b>was watching</b> Mira</i> — «все смотрели на Миру».<br><br>Сравни: <i>Mira <b>bowed</b></i> — «Мира поклонилась» (одно законченное действие, Past Simple).<br><br><b>was going to</b> — «собирался»: <i>someone <b>was going to</b> betray someone</i> — «кто-то собирался кого-то предать»."}
+}

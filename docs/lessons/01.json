@@ -1,0 +1,37 @@
+{
+"id":"01","n":1,"title":"Таверна у леса","en":"The Crooked Lantern","emoji":"🍺",
+"words":[
+ {"w":"tavern","tr":"таверна, трактир","e":"🍺","ex":"The Crooked Lantern was a small tavern at the edge of the Thornwood.","ex_ru":"«Кривой фонарь» был маленькой таверной на краю Тернового леса."},
+ {"w":"hearth","tr":"очаг","e":"🔥","ex":"She kept the fire in the hearth alive.","ex_ru":"Она поддерживала огонь в очаге."},
+ {"w":"innkeeper","tr":"хозяин постоялого двора, трактирщик","e":"🧔","ex":"The innkeeper, old Bram, was kind but tired.","ex_ru":"Трактирщик, старый Брам, был добрым, но усталым."},
+ {"w":"stranger","tr":"незнакомец","e":"🕵️","ex":"A stranger walked in.","ex_ru":"Вошёл незнакомец."},
+ {"w":"cloak","tr":"плащ","e":"🧥","ex":"He wore a long black cloak.","ex_ru":"На нём был длинный чёрный плащ."},
+ {"w":"hood","tr":"капюшон","e":"🫥","ex":"A hood hid his face.","ex_ru":"Капюшон скрывал его лицо."},
+ {"w":"stew","tr":"рагу, похлёбка","e":"🍲","ex":"Mira brought him a bowl of stew.","ex_ru":"Мира принесла ему миску рагу."},
+ {"w":"ale","tr":"эль (пиво)","e":"🍻","ex":"She carried cups of ale.","ex_ru":"Она разносила кружки эля."},
+ {"w":"candle","tr":"свеча","e":"🕯️","ex":"Keep the door closed and the candles lit.","ex_ru":"Держи дверь закрытой, а свечи зажжёнными."},
+ {"w":"coin","tr":"монета","e":"🪙","ex":"He put a coin on the table.","ex_ru":"Он положил на стол монету."}
+],
+"story":[
+ "The Crooked Lantern was a small tavern at the edge of the Thornwood. Nobody went into the forest after dark. Everybody knew why.",
+ "Mira worked there every night. She cleaned the tables, carried bowls of hot stew and cups of ale, and kept the fire in the hearth alive. The innkeeper, old Bram, was kind but tired, and he always said the same thing: “Keep the door closed and the candles lit.”",
+ "That night it was raining. The tavern was warm and loud. Then the door opened, and the room went quiet.",
+ "A stranger walked in. He wore a long black cloak, and a hood hid his face. Water ran from his cloak onto the floor, but his boots were dry. Mira noticed that. She always noticed small things.",
+ "He sat down at the table near the hearth. Mira brought him a bowl of stew and a cup of ale.",
+ "“Thank you,” he said. His voice was soft, almost like music. For a second she saw his eyes under the hood. They were silver, like the moon.",
+ "He did not eat. He only watched the fire.",
+ "When he stood up to leave, he put a coin on the table. It was gold, and it was warm.",
+ "“For your kindness,” he said. “Keep it. You will need it.”",
+ "Then he was gone.",
+ "Bram looked at the coin, and his face went white. “Throw it in the fire, girl,” he whispered. “Nothing from the forest is free.”",
+ "But Mira closed her hand around the coin and put it in her pocket."
+],
+"gloss":{"crooked":"кривой","lantern":"фонарь","edge":"край","thornwood":"Терновый лес (название)","forest":"лес","mira":"Мира (имя)","worked":"работала","cleaned":"убирала, вытирала","tables":"столы","carried":"носила","bowls":"миски","bowl":"миска","cups":"кружки, чашки","cup":"кружка, чашка","alive":"живой","bram":"Брам (имя)","lit":"зажжённый","raining":"шёл дождь","opened":"открылась","went":"стал(а); пошёл","walked":"вошёл, шёл","boots":"сапоги","things":"вещи","music":"музыка","throw":"бросить","whispered":"прошептал","pocket":"карман","kindness":"доброта","after":"после","dark":"темнота","why":"почему"},
+"questions":[
+ {"q":"Where was the tavern?","o":["At the edge of the Thornwood","In a big city","Near the sea"],"a":0},
+ {"q":"What was strange about the stranger?","o":["His boots were dry","He had no cloak","He was very loud"],"a":0},
+ {"q":"What colour were his eyes?","o":["Silver","Green","Black"],"a":0},
+ {"q":"What did Bram tell Mira to do with the coin?","o":["Throw it in the fire","Keep it","Give it back"],"a":0}
+],
+"grammar":{"title":"Прошедшее время: Past Simple","text":"Почти вся история рассказана в прошедшем времени. <b>was / were</b> — «был / были»: <i>The tavern was warm</i>, <i>his boots were dry</i>.<br><br>Обычные глаголы получают <b>-ed</b>: work → <b>worked</b>, clean → <b>cleaned</b>, notice → <b>noticed</b>, carry → <b>carried</b> (y меняется на i).<br><br>Самые частые глаголы — неправильные, их запоминают: go → <b>went</b>, see → <b>saw</b>, sit → <b>sat</b>, wear → <b>wore</b>, run → <b>ran</b>, stand → <b>stood</b>, say → <b>said</b>, bring → <b>brought</b>, know → <b>knew</b>.<br><br>Отрицание — через <b>did not</b> + обычная форма: <i>He <b>did not eat</b></i> — «Он не ел»."}
+}

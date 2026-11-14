@@ -1,0 +1,38 @@
+{
+"id":"02","n":2,"title":"Сделка с фейри","en":"A Bargain","emoji":"🤝",
+"words":[
+ {"w":"fae","tr":"фейри, волшебный народ","e":"🧚","ex":"So he was fae.","ex_ru":"Значит, он был фейри."},
+ {"w":"mortal","tr":"смертный (человек)","e":"🧍","ex":"I need a mortal.","ex_ru":"Мне нужен смертный."},
+ {"w":"bargain","tr":"сделка, уговор","e":"🤝","ex":"Never make a bargain with the fae.","ex_ru":"Никогда не заключай сделок с фейри."},
+ {"w":"promise","tr":"обещать; обещание","e":"🤞","ex":"Promise that you will bring me home.","ex_ru":"Пообещай, что вернёшь меня домой."},
+ {"w":"lie","tr":"лгать; ложь","e":"🤥","ex":"I cannot lie.","ex_ru":"Я не могу лгать."},
+ {"w":"iron","tr":"железо; железный","e":"⚙️","ex":"Every child knew: the fae hate iron.","ex_ru":"Каждый ребёнок знал: фейри ненавидят железо."},
+ {"w":"debt","tr":"долг","e":"📜","ex":"Your family's debt will be paid.","ex_ru":"Долг твоей семьи будет оплачен."},
+ {"w":"warn","tr":"предупреждать","e":"⚠️","ex":"Her grandmother always warned her.","ex_ru":"Бабушка всегда её предупреждала."},
+ {"w":"trick","tr":"обман, хитрость, уловка","e":"🃏","ex":"Was that a trick?","ex_ru":"Это была уловка?"},
+ {"w":"crown","tr":"корона","e":"👑","ex":"My brother wants my crown.","ex_ru":"Мой брат хочет мою корону."}
+],
+"story":[
+ "Three nights later, the stranger came back. This time he did not sit by the hearth. He waited for Mira outside, under the old oak tree at the start of the forest path.",
+ "“You kept my coin,” he said.",
+ "“Was that a trick?” Mira asked. She touched the iron ring on her finger. Every child in the village knew: the fae hate iron.",
+ "He smiled, but he stepped back. “No trick. I cannot lie. None of my kind can. But we are very good with words, so listen carefully.”",
+ "So he was fae. Mira's heart beat fast. Her grandmother always warned her: never make a bargain with the fae, never thank them, and never tell them your name.",
+ "“I need a mortal,” he said. “Someone who can walk into my court and touch iron. My brother wants my crown. On the night of the full moon, he will try to kill me. Help me, and your family's debt to Bram will be paid. Every coin.”",
+ "Mira froze. How did he know about the debt?",
+ "“What do you want in return?” she asked.",
+ "“Seven days of your time. Nothing more.”",
+ "“Promise that you will bring me home after seven days. Alive.”",
+ "“I promise,” he said, and the air around them suddenly felt cold. “Do we have a bargain?”",
+ "Mira knew it was a terrible idea. She also knew that Bram could not wait much longer for his money.",
+ "“We have a bargain,” she said."
+],
+"gloss":{"nights":"ночи","later":"спустя, позже","waited":"ждал","oak":"дуб","start":"начало","path":"тропа","kept":"оставила себе","touched":"коснулась","ring":"кольцо","village":"деревня","smiled":"улыбнулся","stepped":"шагнул","none":"никто, ни один","words":"слова","listen":"слушай","carefully":"внимательно","beat":"билось","warned":"предупреждала","court":"двор (королевский)","full":"полный","froze":"застыла","return":"в ответ, взамен","days":"дни","alive":"живой","suddenly":"вдруг","terrible":"ужасный","idea":"идея","money":"деньги","longer":"дольше","family's":"семьи"},
+"questions":[
+ {"q":"Why did the stranger step back?","o":["Mira had an iron ring","It was raining","Bram came out"],"a":0},
+ {"q":"What can the fae not do?","o":["Lie","Walk into a court","Smile"],"a":0},
+ {"q":"What does he want in return?","o":["Seven days of her time","Her name","The gold coin back"],"a":0},
+ {"q":"Why did Mira say yes?","o":["Because of the debt to Bram","Because she loved him","Because she wanted a crown"],"a":0}
+],
+"grammar":{"title":"can и will","text":"<b>can</b> — «могу, умею», после него глагол без to: <i>I <b>can</b> walk</i>. Отрицание — <b>cannot</b> (или <b>can't</b>): <i>I <b>cannot</b> lie</i> — «Я не могу лгать». В прошлом — <b>could</b>: <i>Bram <b>could not</b> wait</i>.<br><br><b>will</b> — будущее время: <i>he <b>will</b> try</i> — «он попытается», <i>I <b>will</b> bring you home</i> — «я верну тебя домой».<br><br><b>will be + форма на -ed</b> — «будет сделано»: <i>the debt <b>will be paid</b></i> — «долг будет оплачен»."}
+}
