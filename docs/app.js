@@ -617,8 +617,9 @@ const HELP=[
 ["Словарь","Перевод по щелчку берётся из твоих карточек, словаря уроков и большого словаря (~18 тыс. слов) из открытого Викисловаря (kaikki.org, Wiktionary, лицензия CC-BY-SA) с частотным списком FrequencyWords (Hermit Dave, CC-BY-SA). Переводы там бывают неточными — свой перевод можно вписать в карточку."],
 ["Настройки ⚙","Размер текста меняет только английские тексты: главы уроков, книги, вопросы и грамматику. Кнопки и меню остаются как были. На телефоне и компьютере размер свой. ↺ — вернуть обычный."],
 ["Слова","Все твои карточки: поиск, ＋ добавить своё слово, щелчок — изменить перевод, пример, смайлик, ассоциацию или удалить. Справа — когда слово придёт на повторение. «Выучено» на «Сегодня» — слова, которые помнишь дольше трёх недель."],
+  ["Версия","Номер версии — внизу этой справки (дата и время выкладки). Если приложение давно открыто, а на сайте вышла новая версия, вверху появится «Есть новая версия» — нажми «Обновить»."],
 ];
-$("#help").onclick=()=>openModal(`<h2>Справка</h2><div class="help">${HELP.map(([t,x])=>`<details><summary>${t}</summary><p>${x}</p></details>`).join("")}</div><div class="mfoot"><span class="sp"></span><button class="btn" id="hc">Закрыть</button></div>`,"help");
+$("#help").onclick=()=>openModal(`<h2>Справка</h2><div class="help">${HELP.map(([t,x])=>`<details><summary>${t}</summary><p>${x}</p></details>`).join("")}</div><div class="mfoot"><span class="ver">${verText()}</span><span class="sp"></span><button class="btn" id="hc">Закрыть</button></div>`,"help");
 document.addEventListener("click",e=>{if(e.target.id==="hc")closeModal()});
 
 /* ---------- настройки: размер текста для чтения (только тексты, не интерфейс; на каждом устройстве свой) ---------- */
@@ -663,3 +664,20 @@ function toast(msg){let el=$(".toast");if(!el){el=document.createElement("div");
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js");
 window.__tav={forms,lookup,nextCard,nextText,DICT,importEpub}; // для проверки
 })();
+
+// Версия на экране и сверка с сайтом (ревизия 22.11.2026). Номер — в version.js: каждая выкладка ставит новый
+// (крючок перед коммитом не пустит изменение docs/ без него). На сайте новее — полоска «Есть новая версия».
+const verText=()=>"Версия "+(window.APP_VERSION||"?");
+async function checkVersion(){
+  if(!window.APP_VERSION||document.getElementById("updBar"))return;
+  try{
+    const m=(await (await fetch("version.js",{cache:"no-cache"})).text()).match(/APP_VERSION\s*=\s*"([^"]+)"/);
+    if(!m||m[1]===window.APP_VERSION)return;
+    const b=document.createElement("div");b.id="updBar";b.className="upd-bar";
+    b.innerHTML='Есть новая версия <button type="button">Обновить</button>';
+    b.querySelector("button").onclick=()=>location.reload();
+    document.body.appendChild(b);
+  }catch(e){}
+}
+checkVersion();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkVersion()});
