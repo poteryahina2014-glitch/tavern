@@ -61,7 +61,7 @@ function lookup(w){
   for(const f of fs){const c=cardOf(f);if(c)return {key:f,tr:c.tr,card:c}}
   if(b0){
     const c=cardOf(b0),t=DICT.get(b0),big=BIG.w[b0],here=DICT.get(raw);
-    if(c)return {key:b0,tr:c.tr,card:c};
+    if(c)return here&&here!==c.tr?{key:b0,tr:here,card:c,show:c.tr}:{key:b0,tr:c.tr,card:c};
     // в большом словаре часто другая часть речи (step — «ступенька»), поэтому перевод из текста — первым
     if(here&&(t||big))return {key:b0,tr:here,card:null,base:t||here+"; "+big,show:t};
   }
@@ -179,7 +179,7 @@ function render(){
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;ls.set("tab",tab);if(tab!=="words")wq="";render();scrollTo(0,0)});
 // второе нажатие сразу после смены экрана не считается: на месте нажатой кнопки уже другая (двойной щелчок «Показать» оценивал слово)
 let freezeTill=0;
-const freeze=()=>{freezeTill=performance.now()+500},frozen=()=>performance.now()<freezeTill;
+const freeze=(ms=500)=>{freezeTill=performance.now()+ms},frozen=()=>performance.now()<freezeTill;
 main.addEventListener("click",e=>{if(frozen()){e.preventDefault();e.stopPropagation()}},true);
 const go=(m)=>{mode=m;freeze();render();scrollTo(0,0)};
 const quit=()=>{mode=null;freeze();render();scrollTo(0,0)};
@@ -207,7 +207,7 @@ function vToday(){
 }
 function lessonRow(x){
   const d=lessonDone(x.id),t=d&&S.texts.find(t=>t.ref===`lesson:${x.id}`),p=!d&&savedLesson(x.id);
-  return `<button class="row" data-lesson="${x.id}"><span class="ic">${x.emoji}</span><span class="tx"><span class="nm">${x.n}. ${esc(x.title)}</span><span class="meta en">${esc(x.en)}</span></span>${t&&t.due?`<span class="badge ${t.due<=today()?"b-now":"b-date"}" title="Перечитать">📖 ${dueLabel(t.due)}</span>`:""}${d?`<span class="badge b-ok">✓</span>`:p?`<span class="badge b-now" title="Продолжить">▶ ${p.step===1?`${Math.min(p.xi,p.ex.length)}/${p.ex.length}`:STEPS[p.step]}</span>`:""}</button>`;
+  return `<button class="row" data-lesson="${x.id}"><span class="ic">${x.emoji}</span><span class="tx"><span class="nm">${x.n}. ${esc(x.title)}</span><span class="meta"><span class="en">${esc(x.en)}</span>${t&&t.due?` · <span title="Перечитать">📖 ${dueLabel(t.due)}</span>`:""}</span></span>${d?`<span class="badge b-ok">✓</span>`:p?`<span class="badge b-now" title="Продолжить">▶ ${p.step===1?`${Math.min(p.xi,p.ex.length)}/${p.ex.length}`:STEPS[p.step]}</span>`:""}</button>`;
 }
 function bindRows(){
   main.querySelectorAll("[data-lesson]").forEach(b=>b.onclick=()=>startLesson(b.dataset.lesson));
@@ -255,10 +255,10 @@ function hl(text,word){ // выделить слово в примере
 function vReview(){
   const m=mode;
   if(m.i>=m.q.length){
-    main.innerHTML=`<div class="topbar"><span class="meta">${m.total} / ${m.total}</span></div>
+    main.innerHTML=`<div class="topbar"><button class="icon" id="rx" title="Закрыть">✕</button><div class="bar"><i style="width:100%"></i></div><span class="meta">${m.practice?"🎴 ":""}${m.total} / ${m.total}</span></div>
       <section class="rcard done"><div class="rword">✓</div><div class="meta">${plural(m.total,"слово","слова","слов")}</div></section>
       <div class="rbtns one"><button class="btn pri" id="rq">Готово</button></div>`;
-    $("#rq").onclick=quit;return;
+    $("#rq").onclick=quit;$("#rx").onclick=quit;return;
   }
   const c=S.cards.find(x=>x.id===m.q[m.i]);if(!c){m.i++;return vReview()}
   const prog=Math.max(0,Math.min(m.i-m.again.size,m.total)); // слово пройдено, когда оценено не «Не помню» или показано второй раз
@@ -288,7 +288,7 @@ async function grade(c,g){
     sb.from("t_log").insert({card_id:c.id,grade:g}).then(r=>{if(!r.error)S.log.push({day:today(),card_id:c.id,grade:g})});
   }
   if(g===0&&!m.again.has(c.id)){m.again.add(c.id);m.q.push(c.id)}
-  m.i++;m.shown=false;freeze();vReview();
+  m.i++;m.shown=false;freeze(350);vReview(); // меньше, чем после «Показать»: здесь быстрое нажатие бывает нарочно
 }
 document.addEventListener("keydown",e=>{
   if(!mode||mode.k!=="review"||$(".modal")||/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
