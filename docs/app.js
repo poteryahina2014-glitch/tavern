@@ -18,7 +18,7 @@ const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
 const daysBetween=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
 function plural(n,a,b,c){const m=Math.abs(n)%10,h=Math.abs(n)%100;return n+" "+(m===1&&h!==11?a:m>=2&&m<=4&&(h<12||h>14)?b:c)}
 const ivlLabel=n=>n<=0?"сегодня":n===1?"завтра":n<30?plural(n,"день","дня","дней"):n<365?Math.round(n/30)+" мес.":Math.round(n/36.5)/10+" г.";
-function dueLabel(d){const n=daysBetween(today(),d);return n<=0?"сегодня":n===1?"завтра":"через "+plural(n,"день","дня","дней")}
+function dueLabel(d){const n=daysBetween(today(),d);return n<0?"ждёт "+plural(-n,"день","дня","дней"):n===0?"сегодня":n===1?"завтра":"через "+plural(n,"день","дня","дней")}
 
 /* ---------- словарь и уроки (файлы) ---------- */
 let LESSONS=[],PICS={},BIG=null;const L={},DICT=new Map();
@@ -170,8 +170,12 @@ function render(){
   ({today:vToday,lessons:vLessons,words:vWords,books:vBooks})[tab]();
 }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;ls.set("tab",tab);render();scrollTo(0,0)});
-const go=(m)=>{mode=m;render();scrollTo(0,0)};
-const quit=()=>{mode=null;render();scrollTo(0,0)};
+// второе нажатие сразу после смены экрана не считается: на месте нажатой кнопки уже другая (двойной щелчок «Показать» оценивал слово)
+let freezeTill=0;
+const freeze=()=>{freezeTill=performance.now()+500},frozen=()=>performance.now()<freezeTill;
+main.addEventListener("click",e=>{if(frozen()){e.preventDefault();e.stopPropagation()}},true);
+const go=(m)=>{mode=m;freeze();render();scrollTo(0,0)};
+const quit=()=>{mode=null;freeze();render();scrollTo(0,0)};
 const lessonDone=id=>S.lessons.find(x=>x.lesson===id);
 const nextLesson=()=>LESSONS.find(x=>!lessonDone(x.id));
 const textTitle=t=>t.title||t.ref;
@@ -239,7 +243,7 @@ function startTrain(list){
 const GR=[["Не помню","g0"],["Трудно","g1"],["Помню","g2"],["Легко","g3"]];
 const GT=[["Не помню","g0",0],["Помню","g2",2]];
 function hl(text,word){ // выделить слово в примере
-  return esc(text).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>forms(t).includes(word)?`<b>${t}</b>`:t);
+  return esc(text).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>forms(t).includes(word)||BIG&&BIG.f[t.toLowerCase()]===word?`<b>${t}</b>`:t);
 }
 function vReview(){
   const m=mode;
@@ -250,7 +254,7 @@ function vReview(){
     $("#rq").onclick=quit;return;
   }
   const c=S.cards.find(x=>x.id===m.q[m.i]);if(!c){m.i++;return vReview()}
-  const prog=Math.min(m.i,m.total);
+  const prog=Math.max(0,Math.min(m.i-m.again.size,m.total)); // слово пройдено, когда оценено не «Не помню» или показано второй раз
   main.innerHTML=`<div class="topbar"><button class="icon" id="rx" title="Закрыть">✕</button><div class="bar"><i style="width:${prog/m.total*100}%"></i></div><span class="meta">${m.practice?"🎴 ":""}${prog} / ${m.total}</span></div>
   <section class="rcard">
     <div class="rword en">${esc(c.word)}</div>
@@ -265,7 +269,7 @@ function vReview(){
   <div class="rbtns${m.practice&&m.shown?" two":""}">${m.shown&&m.practice?GT.map(([t,cl,g])=>`<button class="btn ${cl}" data-g="${g}">${t}<small></small></button>`).join(""):m.shown?GR.map(([t,cl],g)=>`<button class="btn ${cl}" data-g="${g}">${t}<small>${m.again.has(c.id)?"":ivlLabel(nextCard(c,g).ivl)}</small></button>`).join(""):`<button class="btn pri wide" id="show">Показать</button>`}</div>`;
   $("#rx").onclick=quit;
   $("#rnote").onclick=()=>editCard(c,()=>vReview());
-  if(!m.shown)$("#show").onclick=()=>{m.shown=true;vReview()};
+  if(!m.shown)$("#show").onclick=()=>{m.shown=true;freeze();vReview()};
   else main.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>grade(c,+b.dataset.g));
 }
 async function grade(c,g){
@@ -277,11 +281,12 @@ async function grade(c,g){
     sb.from("t_log").insert({card_id:c.id,grade:g}).then(r=>{if(!r.error)S.log.push({day:today(),card_id:c.id,grade:g})});
   }
   if(g===0&&!m.again.has(c.id)){m.again.add(c.id);m.q.push(c.id)}
-  m.i++;m.shown=false;vReview();
+  m.i++;m.shown=false;freeze();vReview();
 }
 document.addEventListener("keydown",e=>{
   if(!mode||mode.k!=="review"||$(".modal")||/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
-  if(e.key===" "||e.key==="Enter"){if(!mode.shown){e.preventDefault();mode.shown=true;vReview()}}
+  if((e.repeat||frozen())&&/^([ 1-4]|Enter)$/.test(e.key))return e.preventDefault();
+  if(e.key===" "||e.key==="Enter"){if(!mode.shown&&mode.i<mode.q.length){e.preventDefault();mode.shown=true;freeze();vReview()}}
   else if(mode.shown&&/^[1-4]$/.test(e.key)){const c=S.cards.find(x=>x.id===mode.q[mode.i]);let g=+e.key-1;if(mode.practice){if(g>1)return;g=g?2:0}if(c)grade(c,g)}
 });
 
@@ -337,10 +342,13 @@ function buildEx(l){
     return {...x,opts:shuffle([x.w,...others]),pick:null,redo:false};
   });
 }
+const isWord=(t,word)=>forms(t).includes(word)||t.toLowerCase().startsWith(word);
 function gapped(ex,word){
   let done=false;
-  return esc(ex).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>{if(!done&&(forms(t).includes(word)||t.toLowerCase().startsWith(word))){done=true;return `<span class="gap">_____</span>`}return t});
+  return esc(ex).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>{if(!done&&isWord(t,word)){done=true;return `<span class="gap">_____</span>`}return t});
 }
+// слово в той форме, в какой оно стоит в своём предложении (warn → warned); в пропусках так показаны все варианты
+const formIn=w=>((w.ex.match(/[A-Za-z]+(?:['’][A-Za-z]+)*/g)||[]).find(t=>isWord(t,w.w))||w.w).toLowerCase();
 function vExercise(top){
   const m=mode,l=L[m.id];
   if(m.xi>=m.ex.length){finishEx(l);return}
@@ -350,7 +358,7 @@ function vExercise(top){
     :`<div class="xs en">${gapped(x.w.ex,x.w.w)}</div><div class="meta">${esc(x.w.ex_ru)}</div>`;
   main.innerHTML=top+`<div class="xbar"><div class="bar"><i style="width:${m.xi/m.ex.length*100}%"></i></div><span class="meta">${m.xi} / ${m.ex.length}</span></div>
     <section class="xbox">${prompt}</section>
-    <div class="opts">${x.opts.map((o,i)=>`<button class="opt ${x.t==="gap"?"en":""} ${!answered?"":o===x.w?"ok":o===x.pick?"bad":""}" data-o="${i}" ${answered?"disabled":""}>${esc(x.t==="tr"?o.tr:o.w)}</button>`).join("")}</div>
+    <div class="opts">${x.opts.map((o,i)=>`<button class="opt ${x.t==="gap"?"en":""} ${!answered?"":o===x.w?"ok":o===x.pick?"bad":""}" data-o="${i}" ${answered?"disabled":""}>${esc(x.t==="tr"?o.tr:formIn(o))}</button>`).join("")}</div>
     <div class="foot"><span class="meta">${answered&&!right?"↻":""}</span><button class="btn pri" id="next" style="visibility:${answered&&!right?"visible":"hidden"}">Дальше</button></div>`;
   main.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{
     x.pick=x.opts[+b.dataset.o];
@@ -568,7 +576,7 @@ function vBook(){
   bindReader(`book:${m.id}`);
   bindRate(async r=>{
     await rateText(`book:${m.id}:${m.n}:${m.p}`,`${b.title} — ${m.ch.title}${P.length>1?` (${m.p+1}/${P.length})`:""}`.slice(0,200),r);
-    bookGo(1);
+    freeze();bookGo(1);
   });
   $("#bdel").onclick=async()=>{
     if(!confirm(`Удалить «${b.title}» из Таверны? Карточки слов останутся.`))return;
@@ -601,7 +609,7 @@ function editCard(c,after){
     const dup=cardOf(row.word);if(dup&&dup!==c)return toast("Такое слово уже есть");
     try{if(c)await updCard(c,row);else await addCards([{...row,src:"manual",due:addDays(today(),1)}]);closeModal();after?after():render()}catch(e){}
   };
-  if(c)$("#cdel").onclick=async()=>{if(!confirm(`Удалить «${c.word}»?`))return;try{await delCard(c);closeModal();if(mode&&mode.k==="review"){mode.q=mode.q.filter(id=>id!==c.id);}render()}catch(e){}};
+  if(c)$("#cdel").onclick=async()=>{if(!confirm(`Удалить «${c.word}»?`))return;try{await delCard(c);closeModal();if(mode&&mode.k==="review"){const m=mode;m.i-=m.q.slice(0,m.i).filter(id=>id===c.id).length;m.q=m.q.filter(id=>id!==c.id);m.total--;m.again.delete(c.id);m.shown=false;freeze()}render()}catch(e){}};
 }
 
 /* ---------- справка ---------- */
