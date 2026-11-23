@@ -87,12 +87,12 @@ button.row:hover{background:var(--surface-2)}
 .toolbar input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:9px 12px;min-height:40px}
 
 /* верхняя полоса в уроке / повторении / книге */
-.topbar{display:flex;align-items:center;gap:8px;min-height:40px}
+.topbar{display:flex;align-items:center;gap:8px;min-height:40px;position:sticky;top:calc(55px + env(safe-area-inset-top,0px));z-index:4;background:var(--bg);padding-block:4px;margin-block:-4px}
 .topbar .tt{font-weight:700;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .bar{flex:1;height:8px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
 .steps{display:flex;gap:4px}
-.steps span{flex:1;text-align:center;font-size:11.5px;font-weight:600;padding:5px 2px;border-radius:8px;background:var(--surface-2);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps button{flex:1;border:0;opacity:1;text-align:center;font-size:11.5px;font-weight:600;padding:5px 2px;border-radius:8px;background:var(--surface-2);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .steps .on{background:var(--ok-bg);color:var(--ok)}
 .steps .cur{background:var(--accent);color:var(--accent-ink)}
 .foot{display:flex;align-items:center;gap:10px;justify-content:flex-end;min-height:44px}
@@ -102,6 +102,7 @@ button.row:hover{background:var(--surface-2)}
 .rcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);height:360px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;overflow:auto}
 .rcard.done{justify-content:center}
 .rword{font-family:var(--f-read);font-size:34px;font-weight:600;margin-top:18px}
+.rword,.rtr,.rex,.rnote,.xw,.xs,.opt,.sw b,.str,.story-t{max-width:100%;overflow-wrap:anywhere;min-width:0}
 .rback{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
 .remo{font-size:40px;min-height:48px}
 .rtr{font-size:20px;font-weight:700}
@@ -194,7 +195,7 @@ button.row:hover{background:var(--surface-2)}
 .modal{background:var(--surface);border-radius:18px;width:min(520px,100%);height:min(620px,calc(100dvh - 32px));display:flex;flex-direction:column;gap:10px;padding:18px;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.3)}
 .modal h2{margin:0;font-family:var(--f-display);font-size:18px}
 .mmeta{margin:0;min-height:1.3em}
-.mfoot{display:flex;gap:8px;align-items:center;margin-top:auto;padding-top:6px}
+.mfoot{display:flex;gap:8px;align-items:center;margin-top:auto;margin-bottom:-18px;padding-block:8px 18px;position:sticky;bottom:-18px;background:var(--surface);flex:none}
 .help{display:flex;flex-direction:column;gap:6px}
 .help details{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface-2)}
 .help summary{font-weight:700;cursor:pointer}
@@ -210,7 +211,10 @@ body.has-sheet .toast{bottom:220px}
   .rbtns:not(.three):not(.two){min-height:124px;align-content:start}
   .rbtns.two{grid-template-columns:1fr 1fr;min-height:124px;align-content:start}
   .reader{padding:4px 14px;font-size:var(--read-fs,17.5px)}
-  .steps span{font-size:10.5px}
+  .steps button{font-size:10.5px}
+  .hero{flex-wrap:wrap}
+  .hbtns{flex:1 0 100%}
+  .hbtns .pri{flex:1}
 }
 
 /* Версия в справке и полоска «Есть новая версия» (поверх, ничего не сдвигает) */
