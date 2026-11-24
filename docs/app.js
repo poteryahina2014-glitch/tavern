@@ -21,10 +21,10 @@ const ivlLabel=n=>n<=0?"сегодня":n===1?"завтра":n<30?plural(n,"де
 function dueLabel(d){const n=daysBetween(today(),d);return n<0?"ждёт "+plural(-n,"день","дня","дней"):n===0?"сегодня":n===1?"завтра":"через "+plural(n,"день","дня","дней")}
 
 /* ---------- словарь и уроки (файлы) ---------- */
-let LESSONS=[],PICS={},BIG=null;const L={},DICT=new Map(),LWORDS=new Set();
+let LESSONS=[],PICS={},BIG=null,IRR={};const L={},DICT=new Map(),LWORDS=new Set();
 async function loadContent(){
-  const [core,idx,pics]=await Promise.all([fetch("data/core.json").then(r=>r.json()),fetch("lessons/index.json").then(r=>r.json()),fetch("data/pics.json").then(r=>r.json()).catch(()=>({}))]);
-  PICS=pics;
+  const [core,idx,pics,irr]=await Promise.all([fetch("data/core.json").then(r=>r.json()),fetch("lessons/index.json").then(r=>r.json()),fetch("data/pics.json").then(r=>r.json()).catch(()=>({})),fetch("data/irr.json").then(r=>r.json()).catch(()=>({}))]);
+  PICS=pics;IRR=irr;
   for(const [k,v] of Object.entries(core))DICT.set(k,v);
   LESSONS=idx;
   const all=await Promise.all(idx.map(x=>fetch(`lessons/${x.id}.json`).then(r=>r.json())));
@@ -54,16 +54,19 @@ function forms(w){
 let bigP=null;
 function loadBig(){return bigP||(bigP=fetch("data/dict.json").then(r=>r.json()).then(d=>{BIG=d}).catch(()=>{bigP=null}))}
 const cardOf=w=>S&&S.cards.find(c=>c.word===w);
+// начальное слово неправильной формы: IRR (data/irr.json: форма → [начальное, перевод формы, перевод начального]) — для форм,
+// которые в большом словаре значатся отдельным словом (lit — «освещённый»), остальные — из самого словаря
+const baseOf=t=>IRR[t]?IRR[t][0]:BIG&&BIG.f[t]||null;
 // {key, tr, card, base}: сначала её карточки, потом словарь уроков, потом большой словарь (с неправильными формами: went → go).
 // Форма есть в словаре уроков сама по себе (went — «пошёл») — перевод показать её, а карточка — на начальное слово (base — его перевод)
 function lookup(w){
-  const fs=forms(w),raw=fs[0],b0=BIG&&!LWORDS.has(raw)&&BIG.f[raw];
+  const fs=forms(w),raw=fs[0],b0=!LWORDS.has(raw)&&baseOf(raw),ir=b0&&IRR[raw];
   for(const f of fs){const c=cardOf(f);if(c)return {key:f,tr:c.tr,card:c}}
   if(b0){
-    const c=cardOf(b0),t=DICT.get(b0),big=BIG.w[b0],here=DICT.get(raw);
+    const c=cardOf(b0),t=ir&&ir[2]||DICT.get(b0),big=BIG&&BIG.w[b0],here=DICT.get(raw)||ir&&ir[1];
     if(c)return here&&here!==c.tr?{key:b0,tr:here,card:c,show:c.tr}:{key:b0,tr:c.tr,card:c};
     // в большом словаре часто другая часть речи (step — «ступенька»), поэтому перевод из текста — первым
-    if(here&&(t||big))return {key:b0,tr:here,card:null,base:t||here+"; "+big,show:t};
+    if(here&&(t||big))return {key:b0,tr:here,card:null,base:t||(ir?big:here+"; "+big),show:t||ir&&big};
   }
   for(const f of fs)if(DICT.has(f))return {key:f,tr:DICT.get(f),card:null};
   if(BIG){
@@ -79,14 +82,21 @@ const pic=(word,emoji)=>PICS[word]?`<span class="pic">${PICS[word]}</span>`:esc(
 const sb=supabase.createClient(CONFIG.url,CONFIG.key);
 let S=null,user=null,tab=ls.get("tab","today"),mode=null;
 const ok=r=>{if(r.error)throw r.error;return r.data};
+// таблица целиком: база отдаёт не больше 1000 строк за раз, поэтому порциями, в постоянном порядке (key), пока не наберётся count
+async function all(t,key="id",more=q=>q){
+  const rows=[];
+  for(;;){
+    const r=await more(sb.from(t).select("*",{count:"exact"})).order(key).range(rows.length,rows.length+999);
+    if(r.error)throw r.error;
+    rows.push(...r.data);
+    if(!r.data.length||rows.length>=r.count)break;
+  }
+  const seen=new Set();return rows.filter(x=>!seen.has(x[key])&&seen.add(x[key])); // строка, добавленная во время загрузки, могла прийти дважды
+}
 async function load(){
   try{
-    const rs=await Promise.all([
-      sb.from("t_cards").select("*"),sb.from("t_texts").select("*"),sb.from("t_lessons").select("*"),
-      sb.from("t_books").select("*"),sb.from("t_log").select("*").gte("day",addDays(today(),-30)),
-    ]);
-    const bad=rs.find(r=>r.error);if(bad)throw bad.error;
-    S={cards:rs[0].data,texts:rs[1].data,lessons:rs[2].data,books:rs[3].data,log:rs[4].data};
+    const [cards,texts,lessons,books,log]=await Promise.all([all("t_cards"),all("t_texts"),all("t_lessons","lesson"),all("t_books"),all("t_log","id",q=>q.gte("day",addDays(today(),-30)))]);
+    S={cards,texts,lessons,books,log};
     render();loadBig();
   }catch(e){
     console.error(e);
@@ -207,7 +217,7 @@ function vToday(){
 }
 function lessonRow(x){
   const d=lessonDone(x.id),t=d&&S.texts.find(t=>t.ref===`lesson:${x.id}`),p=!d&&savedLesson(x.id);
-  return `<button class="row" data-lesson="${x.id}"><span class="ic">${x.emoji}</span><span class="tx"><span class="nm">${x.n}. ${esc(x.title)}</span><span class="meta"><span class="en">${esc(x.en)}</span>${t&&t.due?` · <span title="Перечитать">📖 ${dueLabel(t.due)}</span>`:""}</span></span>${d?`<span class="badge b-ok">✓</span>`:p?`<span class="badge b-now" title="Продолжить">▶ ${p.step===1?`${Math.min(p.xi,p.ex.length)}/${p.ex.length}`:STEPS[p.step]}</span>`:""}</button>`;
+  return `<button class="row" data-lesson="${x.id}"><span class="ic">${x.emoji}</span><span class="tx"><span class="nm">${x.n}. ${esc(x.title)}</span><span class="meta"><span class="en">${esc(x.en)}</span>${t&&t.due?` · <span title="Перечитать">📖 ${dueLabel(t.due)}</span>`:""}</span></span>${d?`<span class="badge b-ok">✓</span>`:p?`<span class="badge b-now" title="Продолжить">▶ ${p.step===1?exProg(p.ex,p.xi).join("/"):STEPS[p.step]}</span>`:""}</button>`;
 }
 function bindRows(){
   main.querySelectorAll("[data-lesson]").forEach(b=>b.onclick=()=>startLesson(b.dataset.lesson));
@@ -250,7 +260,7 @@ function startTrain(list){
 const GR=[["Не помню","g0"],["Трудно","g1"],["Помню","g2"],["Легко","g3"]];
 const GT=[["Не помню","g0",0],["Помню","g2",2]];
 function hl(text,word){ // выделить слово в примере
-  return esc(text).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>forms(t).includes(word)||BIG&&BIG.f[t.toLowerCase()]===word?`<b>${t}</b>`:t);
+  return esc(text).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>forms(t).includes(word)||baseOf(t.toLowerCase())===word?`<b>${t}</b>`:t);
 }
 function vReview(){
   const m=mode;
@@ -302,15 +312,33 @@ const STEPS=["Слова","Практика","История","Вопросы","
 function startLesson(id){
   const l=L[id];if(!l)return;
   const done=!!lessonDone(id);
-  go(!done&&restoreLesson(l)||{k:"lesson",id,step:done?2:0,max:done?4:0,done,unk:new Map()}); // пройденный — сразу с истории
+  const saved=!done&&restoreLesson(l);
+  go(saved||{k:"lesson",id,step:done?2:0,max:done?4:0,done,unk:new Map()}); // пройденный — сразу с истории
+  if(saved&&saved.step===2)toPar(saved.par);
 }
+// место в истории урока: номер абзаца и доля его высоты у верхнего края текста (точки экрана зависят от ширины и размера шрифта)
+const parTop=()=>{const b=main.querySelector(".topbar");return b?b.getBoundingClientRect().bottom+8:100};
+function parNow(){
+  const top=parTop(),ps=[...main.querySelectorAll(".reader p")],i=scrollY<10?-1:ps.findIndex(p=>p.getBoundingClientRect().bottom>top);
+  if(i<0)return scrollY<10||!ps.length?null:[ps.length-1,1];
+  const r=ps[i].getBoundingClientRect();return [i,Math.round(Math.max(-1,(top-r.top)/r.height)*100)/100];
+}
+function toPar(v){
+  const p=v&&main.querySelectorAll(".reader p")[v[0]];if(!p)return;
+  // панель с ✕ прилипает при прокрутке: сначала прокрутить, потом мерить от её настоящего места
+  for(let k=0;k<2;k++){const r=p.getBoundingClientRect();scrollTo(0,scrollY+r.top+v[1]*r.height-parTop())}
+}
+let parT;
+const keepPar=()=>{const m=mode;if(m&&m.k==="lesson"&&m.step===2&&!m.done){m.par=parNow();saveLesson()}};
+addEventListener("scroll",()=>{clearTimeout(parT);const m=mode;if(m&&m.k==="lesson"&&m.step===2&&!m.done)parT=setTimeout(()=>{if(mode===m)keepPar()},300)},{passive:true});
+addEventListener("pagehide",keepPar);
 // ход непройденного урока — на устройстве (tav:les:<пользователь>), чтобы обновление страницы его не теряло
 const lesKey=()=>"les:"+(user?user.id:"");
 const savedLesson=id=>ls.get(lesKey(),{})[id]||null;
 function putLesson(id,v){const a=ls.get(lesKey(),{});if(v)a[id]=v;else delete a[id];ls.set(lesKey(),a)}
 function saveLesson(){
   const m=mode;if(!m||m.k!=="lesson"||m.done||!m.max)return;
-  putLesson(m.id,{step:m.step,max:m.max,xi:m.xi||0,late:!!m.late,
+  putLesson(m.id,{step:m.step,max:m.max,xi:m.xi||0,late:!!m.late,par:m.par||null,
     ex:(m.ex||[]).map(x=>({t:x.t,w:x.w.w,o:x.opts.map(o=>o.w),p:x.pick?x.pick.w:null,r:x.redo})),
     qs:m.qs?m.qs.map(q=>({q:q.q,ord:q.ord,pick:q.pick})):null,
     unk:[...m.unk].map(([k,u])=>[k,{id:u.card.id,created:!!u.created,prev:u.prev||null}])});
@@ -318,9 +346,10 @@ function saveLesson(){
 function restoreLesson(l){
   const s=savedLesson(l.id);if(!s)return null;
   try{
-    const by=w=>{const x=l.words.find(x=>x.w===w);if(!x)throw new Error("урок изменился");return x};
-    const m={k:"lesson",id:l.id,step:s.step,max:s.max,xi:s.xi,late:s.late,unk:new Map()};
-    m.ex=s.ex.map(x=>({t:x.t,w:by(x.w),opts:x.o.map(by),pick:x.p?by(x.p):null,redo:x.r}));
+    const own=w=>{const x=l.words.find(x=>x.w===w);if(!x)throw new Error("урок изменился");return x};
+    const by=w=>l.words.find(x=>x.w===w)||poolOf(l).find(x=>x.w===w)||own(w); // неверные варианты бывают из пройденных уроков
+    const m={k:"lesson",id:l.id,step:s.step,max:s.max,xi:s.xi,late:s.late,par:s.par||null,unk:new Map()};
+    m.ex=s.ex.map(x=>({t:x.t,w:own(x.w),opts:x.o.map(by),pick:x.p?by(x.p):null,redo:x.r}));
     if(m.step===1&&!m.ex.length)throw new Error("нет упражнений");
     if(m.ex[m.xi]&&m.ex[m.xi].pick===m.ex[m.xi].w)m.xi++; // ответила верно, а следующее показать не успели
     if(s.qs)m.qs=l.questions.map((q,i)=>{const z=s.qs[i];if(!z||z.q!==q.q||z.ord.length!==q.o.length)throw new Error("урок изменился");return {...q,ord:z.ord,pick:z.pick}});
@@ -383,28 +412,68 @@ function bindRate(fn){main.querySelectorAll("[data-r]").forEach(b=>b.onclick=asy
 function buildEx(l){
   const ws=l.words;
   return [...shuffle(ws).map(w=>({t:"tr",w})),...shuffle(ws).map(w=>({t:"gap",w}))].map(x=>{
-    const others=shuffle(ws.filter(o=>o!==x.w)).slice(0,3);
+    const others=x.t==="gap"?gapOthers(x.w,l.words,poolOf(l)):shuffle(ws.filter(o=>o!==x.w)).slice(0,3);
     return {...x,opts:shuffle([x.w,...others]),pick:null,redo:false};
   });
 }
 const isWord=(t,word)=>forms(t).includes(word)||t.toLowerCase().startsWith(word);
-function gapped(ex,word){
+function gapped(ex,word,shown){ // shown — уже ответила: в пропуске стоит верное слово
   let done=false;
-  return esc(ex).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>{if(!done&&isWord(t,word)){done=true;return `<span class="gap">_____</span>`}return t});
+  return esc(ex).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g,t=>{if(!done&&isWord(t,word)){done=true;return `<span class="gap">${shown?t:"_____"}</span>`}return t});
 }
 // слово в той форме, в какой оно стоит в своём предложении (warn → warned); в пропусках так показаны все варианты
 const formIn=w=>((w.ex.match(/[A-Za-z]+(?:['’][A-Za-z]+)*/g)||[]).find(t=>isWord(t,w.w))||w.w).toLowerCase();
+// неверные варианты пропуска — в той же форме, что верный ответ, чтобы он не угадывался по окончанию: сначала слова той же
+// части речи, у которых эта форма стоит в примере, потом те же слова с окончанием по правилам. Слова — из этого и пройденных уроков
+const IRRV=new Set(["kneel","bleed","forgive","wolf","prove"]); // окончание по правилам не подходит (сверяет tools/check_lessons.js)
+const VERBY=new Set(["trick","crown","bargain","guard","lock","curse","poison","mask","chain","cage","vow"]); // в уроке существительное, но бывает и глаголом
+const isV=s=>/(ть|ться|ти|чь)$/.test(s.split(" ")[0])&&!/([ео]сть|ночь)$/.test(s.split(" ")[0]); // «встать на колени» — глагол, «месть» и «полночь» — нет
+const senses=w=>w.tr.replace(/\(.*?\)/g,"").split(/[,;]/).map(s=>s.trim());
+// форма слова в его примере: "" — начальная, s, ed (и неправильное причастие), ing
+function formType(w){const f=formIn(w);return f===w.w?(/[^su]s$/.test(f)?"s":""):/ing$/.test(f)?"ing":/s$/.test(f)?"s":"ed"}
+function wPos(w){const t=formType(w),s=senses(w)[0];return t==="ed"||t==="ing"||isV(s)?"v":/^\S+(ый|ий|ой)$/.test(s)?"a":"n"}
+const canBe=(w,p)=>p==="v"?wPos(w)==="v"||VERBY.has(w.w)||senses(w).some(isV):wPos(w)===p;
+function inflect(w,t){
+  const cvc=/^[^aeiou]*[aeiou][^aeiouwxy]$/.test(w)?w+w.slice(-1):w;
+  if(t==="s")return /(s|x|z|ch|sh)$/.test(w)?w+"es":/[^aeiou]y$/.test(w)?w.slice(0,-1)+"ies":w+"s";
+  if(t==="ed")return /e$/.test(w)?w+"d":/[^aeiou]y$/.test(w)?w.slice(0,-1)+"ied":cvc+"ed";
+  return /ie$/.test(w)?w.slice(0,-2)+"ying":/[^e]e$/.test(w)?w.slice(0,-1)+"ing":cvc+"ing";
+}
+// как показать слово o среди вариантов, когда верный ответ — w
+function optText(o,w){
+  const t=formType(w);
+  if(o===w||t&&formType(o)===t)return formIn(o);
+  if(!t)return o.w;
+  return canBe(o,wPos(w))&&!IRRV.has(o.w)&&!/[^su]s$/.test(o.w)?inflect(o.w,t):o.w;
+}
+// 0 — та же форма и часть речи, 1 — та же форма, 2 — форма другая
+const optTier=(o,w)=>{const t=formType(w),ok=t?formType(o)===t||optText(o,w)!==o.w:!/[^su]s$/.test(o.w);return !ok?2:canBe(o,wPos(w))?0:1};
+function gapOthers(w,own,pool){
+  const r=[],seen=new Set([formIn(w)]);
+  const rank=o=>optTier(o,w)*2+(own.includes(o)?0:1);
+  for(const o of shuffle(pool.filter(o=>o!==w)).sort((a,b)=>rank(a)-rank(b))){
+    const t=optText(o,w);if(seen.has(t))continue;
+    seen.add(t);r.push(o);if(r.length===3)break;
+  }
+  return r;
+}
+const poolOf=l=>LESSONS.slice(0,LESSONS.findIndex(x=>x.id===l.id)+1).flatMap(x=>L[x.id].words);
+// пройдено / всего, как в повторении: ошибка общее число не увеличивает и полосу не двигает
+function exProg(ex,xi){
+  const total=ex.filter(x=>!(x.redo||x.r)).length,now=ex[xi],ans=now&&(now.pick||now.p)?1:0;
+  return [Math.max(0,Math.min(total,xi+ans-(ex.length-total))),total];
+}
 function vExercise(top){
   const m=mode,l=L[m.id];
   if(m.xi>=m.ex.length){finishEx(l);return false}
-  const x=m.ex[m.xi],answered=x.pick!=null,right=answered&&x.pick===x.w;
+  const x=m.ex[m.xi],answered=x.pick!=null,right=answered&&x.pick===x.w,[done,total]=exProg(m.ex,m.xi);
   const prompt=x.t==="tr"
     ?`<div class="xw en">${esc(x.w.w)}</div><div class="xe" ${answered?"":"style=visibility:hidden"}>${pic(x.w.w,x.w.e)}</div>`
-    :`<div class="xs en">${gapped(x.w.ex,x.w.w)}</div><div class="meta">${esc(x.w.ex_ru)}</div>`;
-  main.innerHTML=top+`<div class="xbar"><div class="bar"><i style="width:${m.xi/m.ex.length*100}%"></i></div><span class="meta">${m.xi} / ${m.ex.length}</span></div>
+    :`<div class="xs en">${gapped(x.w.ex,x.w.w,answered)}</div><div class="meta">${esc(x.w.ex_ru)}</div>`;
+  main.innerHTML=top+`<div class="xbar"><div class="bar"><i style="width:${done/total*100}%"></i></div><span class="meta">${done} / ${total}</span></div>
     <section class="xbox">${prompt}</section>
-    <div class="opts">${x.opts.map((o,i)=>`<button class="opt ${x.t==="gap"?"en":""} ${!answered?"":o===x.w?"ok":o===x.pick?"bad":""}" data-o="${i}" ${answered?"disabled":""}>${esc(x.t==="tr"?o.tr:formIn(o))}</button>`).join("")}</div>
-    <div class="foot"><span class="meta">${answered&&!right?"↻":""}</span><button class="btn pri" id="next" style="visibility:${answered&&!right?"visible":"hidden"}">Дальше</button></div>`;
+    <div class="opts">${x.opts.map((o,i)=>`<button class="opt ${x.t==="gap"?"en":""} ${!answered?"":o===x.w?"ok":o===x.pick?"bad":""}" data-o="${i}" ${answered?"disabled":""}>${esc(x.t==="tr"?o.tr:optText(o,x.w))}</button>`).join("")}</div>
+    <div class="foot"><span class="meta">${answered&&!right&&!x.redo?`<span title="Вернётся в конце">↻</span>`:""}</span><button class="btn pri" id="next" style="visibility:${answered&&!right?"visible":"hidden"}">Дальше</button></div>`;
   main.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{
     x.pick=x.opts[+b.dataset.o];
     if(x.pick!==x.w&&!x.redo)m.ex.push({...x,pick:null,redo:true,opts:shuffle(x.opts)});
@@ -414,6 +483,18 @@ function vExercise(top){
   $("#next").onclick=()=>{m.xi++;vLesson()};
   return true;
 }
+// на компьютере: 1–4 — вариант, Enter или пробел — «Дальше» (на словах и в упражнениях; в истории Enter не пролистывает главу)
+document.addEventListener("keydown",e=>{
+  const m=mode;
+  if(!m||m.k!=="lesson"||m.step>1||$(".modal")||e.ctrlKey||e.altKey||e.metaKey)return;
+  let b=null;
+  if(e.key==="Enter"||e.key===" ")b=$("#next");
+  else if(m.step===1&&/^[1-4]$/.test(e.key))b=main.querySelector(`[data-o="${e.key-1}"]`);
+  else return;
+  if(e.target.closest&&e.target.closest("button")&&e.target!==b&&!/^[1-4]$/.test(e.key))return; // Enter на другой кнопке — её нажатие
+  e.preventDefault();
+  if(b&&!b.disabled&&!e.repeat&&!frozen()&&b.style.visibility!=="hidden")b.click();
+});
 async function lessonCards(l){
   const rows=l.words.filter(w=>!cardOf(w.w)).map(w=>({word:w.w,tr:w.tr,emoji:w.e,ex:w.ex,ex_ru:w.ex_ru,src:`lesson:${l.id}`,due:addDays(today(),1)}));
   await addCards(rows);if(rows.length)toast(`🗝️ +${rows.length}`);
@@ -668,7 +749,7 @@ function editCard(c,after,pre){
 
 /* ---------- справка ---------- */
 const HELP=[
-["Как устроен урок","Урок — 10 новых слов на одну тему и глава общей истории «The Lantern and the Thorn». Сначала смотришь слова с примерами, потом упражнения: выбрать перевод и вставить слово в предложение. Ошибки возвращаются в конец, пока не ответишь верно. После упражнений слова становятся карточками, а дальше — глава истории, где встречаются все эти слова, вопросы по смыслу и оценка, насколько текст понятен.<br>Урок можно прервать: он запоминается на этом устройстве, в списке будет «▶ 7/20» — продолжишь с того же места. ↺ вверху — начать сначала. Шаги вверху нажимаются: можно вернуться к уже открытым, например из «Вопросов» к истории. Пройденный урок (✓) открывается сразу с истории; 📖 рядом — когда текст вернётся на перечитывание."],
+["Как устроен урок","Урок — 10 новых слов на одну тему и глава общей истории «The Lantern and the Thorn». Сначала смотришь слова с примерами, потом упражнения: выбрать перевод и вставить слово в предложение. Слово с ошибкой вернётся в конце практики ещё раз — об этом говорит значок ↻ внизу слева. В пропуск после ответа встаёт верное слово. Счётчик и полоса — сколько слов пройдено, ошибка их не двигает. На компьютере: 1–4 — вариант, Enter или пробел — «Дальше». После упражнений слова становятся карточками, а дальше — глава истории, где встречаются все эти слова, вопросы по смыслу и оценка, насколько текст понятен.<br>Урок можно прервать: он запоминается на этом устройстве, в списке будет «▶ 7/20» — продолжишь с того же места, в истории — с того же абзаца. ↺ вверху — начать сначала. Шаги вверху нажимаются: можно вернуться к уже открытым, например из «Вопросов» к истории. Пройденный урок (✓) открывается сразу с истории; 📖 рядом — когда текст вернётся на перечитывание."],
 ["Повторение слов","Каждый день на «Сегодня» — только слова, у которых подошёл срок. Посмотри на слово, вспомни перевод, нажми «Показать» и честно оцени:<br>• <b>Не помню</b> — слово вернётся в конце этого же повторения и завтра;<br>• <b>Трудно</b> — промежуток чуть растёт;<br>• <b>Помню</b> — промежуток растёт в 2–2,5 раза;<br>• <b>Легко</b> — ещё сильнее.<br>Под кнопками видно, когда слово придёт снова. Новое слово: завтра → через несколько дней → неделя → месяц… Если пропустила день и всё равно помнишь, часть опоздания засчитывается. Полоса вверху растёт, когда слово пройдено; «Не помню» её не двигает. На компьютере: пробел — показать, 1–4 — оценки, Esc — выйти."],
 ["Читалка","Щёлкни на любое слово — внизу появится перевод (если слово есть в словаре или в твоих карточках) и кнопка 🌐 переводчика. <b>❓ Не понимаю</b>: если слова ещё нет в карточках, оно станет карточкой вместе с предложением из текста (перевод можно вписать сразу или потом в «Слова»); если уже есть — начнёт приходить чаще. Повторный щелчок по «Не понимаю» снимает отметку. Если слово стоит в изменённой форме (went), видно и начальное («→ go — идти»), карточка будет на него. Подчёркнутые слова — слова урока."],
 ["Перечитывание текстов","После каждого текста ты отмечаешь, насколько он понятен. 😕 не поняла — текст вернётся завтра, 🤔 частично — через 3 дня, 😊 понятно — через неделю, потом всё реже. Тексты, которые пора перечитать, — на «Сегодня» в разделе «Перечитать». Как с песней: раз за разом понятно всё больше."],
@@ -730,7 +811,7 @@ function toast(msg){let el=$(".toast");if(!el){el=document.createElement("div");
   });
 })();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js");
-window.__tav={forms,lookup,nextCard,nextText,DICT,importEpub}; // для проверки
+window.__tav={S:()=>S,buildEx,optText,formIn,L,forms,lookup,nextCard,nextText,DICT,importEpub}; // для проверки
 })();
 
 // Версия на экране и сверка с сайтом (ревизия 22.11.2026). Номер — в version.js: каждая выкладка ставит новый
