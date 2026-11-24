@@ -362,7 +362,7 @@ function restoreLesson(l){
     if(m.step>=3&&!m.qs)throw new Error("нет вопросов");
     for(const [k,u] of s.unk){const c=S.cards.find(c=>c.id===u.id);if(c)m.unk.set(k,{card:c,created:u.created,prev:u.prev})}
     return m;
-  }catch(e){console.warn(e);putLesson(l.id,null);return null}
+  }catch(e){console.error(e);putLesson(l.id,null);return null}
 }
 // шаги вверху: к уже открытым можно вернуться
 function stepsBar(m){return `<div class="steps">${STEPS.map((s,j)=>`<button type="button" data-step="${j}" class="${j===m.step?"cur":j<=m.max?"on":""}" ${j>m.max||j===m.step?"disabled":""}>${s}</button>`).join("")}</div>`}
@@ -779,9 +779,10 @@ const HELP=[
 ["Словарь","Перевод по щелчку берётся из твоих карточек, словаря уроков и большого словаря (~18 тыс. слов) из открытого Викисловаря (kaikki.org, Wiktionary, лицензия CC-BY-SA) с частотным списком FrequencyWords (Hermit Dave, CC-BY-SA). Переводы там бывают неточными — свой перевод можно вписать в карточку."],
 ["Настройки ⚙","Размер текста меняет только английские тексты: главы уроков, книги, вопросы и грамматику. Кнопки и меню остаются как были. На телефоне и компьютере размер свой. ↺ — вернуть обычный."],
 ["Слова","Все твои карточки: поиск, ＋ добавить своё слово, щелчок — изменить перевод, пример, смайлик, ассоциацию или удалить. Справа — когда слово придёт на повторение («ждёт 2 дня» — срок прошёл). Слово не нашлось — ＋ подставит его в новую карточку. «Выучено» на «Сегодня» — слова, которые помнишь дольше трёх недель."],
+  ["Ошибки","Если что-то сломалось, программа сама записывает это на устройство: «Ошибки: N» внизу этой справки. Там время и место сбоя, отказы базы и когда не было связи. «Скопировать» — и прислать Claude. Твоих слов, текста книг, почты и паролей в журнале нет. Хранится 30 последних ошибок за 30 дней, у каждого устройства свои; одинаковые складываются в одну строку «×2». Программа не открылась совсем — внизу пустого экрана появится полоска «Программа не запустилась» с той же кнопкой."],
   ["Версия","Номер версии — внизу этой справки (дата и время выкладки). Если приложение давно открыто, а на сайте вышла новая версия, вверху появится «Есть новая версия» — нажми «Обновить»."],
 ];
-$("#help").onclick=()=>openModal(`<h2>Справка</h2><div class="help">${HELP.map(([t,x])=>`<details><summary>${t}</summary><p>${x}</p></details>`).join("")}</div><div class="mfoot"><span class="ver">${verText()}</span><span class="sp"></span><button class="btn" id="hc">Закрыть</button></div>`,"help");
+$("#help").onclick=()=>openModal(`<h2>Справка</h2><div class="help">${HELP.map(([t,x])=>`<details><summary>${t}</summary><p>${x}</p></details>`).join("")}</div><div class="mfoot"><span class="ver">${verText()}</span><span class="sp"></span>${window.ERRLOG?ERRLOG.button():""}<button class="btn" id="hc">Закрыть</button></div>`,"help");
 document.addEventListener("click",e=>{if(e.target.id==="hc")closeModal()});
 
 /* ---------- настройки: размер текста для чтения (только тексты, не интерфейс; на каждом устройстве свой) ---------- */
