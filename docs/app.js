@@ -332,6 +332,7 @@ let parT;
 const keepPar=()=>{const m=mode;if(m&&m.k==="lesson"&&m.step===2&&!m.done){m.par=parNow();saveLesson()}};
 addEventListener("scroll",()=>{clearTimeout(parT);const m=mode;if(m&&m.k==="lesson"&&m.step===2&&!m.done)parT=setTimeout(()=>{if(mode===m)keepPar()},300)},{passive:true});
 addEventListener("pagehide",keepPar);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)keepPar()});
 // ход непройденного урока — на устройстве (tav:les:<пользователь>), чтобы обновление страницы его не теряло
 const lesKey=()=>"les:"+(user?user.id:"");
 const savedLesson=id=>ls.get(lesKey(),{})[id]||null;
