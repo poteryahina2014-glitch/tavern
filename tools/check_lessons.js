@@ -25,6 +25,7 @@ const regular = (f, w) => new RegExp('^(' + w + '|' + w.replace(/[ey]$/, '') + '
 const irregular = new Set(Object.entries(dict.f).filter(([f, b]) => !regular(f, b)).map(x => x[1]).concat(Object.values(irr).map(x => x[0])));
 const KEEP = new Set(['lie']); // «лгать»: lied по правилам (lay/lain — от другого lie)
 const show = process.argv.includes('--show');
+const known = new Set(json('lessons/index.json').flatMap(x => json(`lessons/${x.id}.json`).words.map(w => w.w)));
 let words = 0, changed = 0;
 for (const x of json('lessons/index.json')) {
   const l = json(`lessons/${x.id}.json`), bad = t => errs.push(`Урок ${x.id}: ${t}`);
@@ -52,6 +53,11 @@ for (const x of json('lessons/index.json')) {
     if (!story.some(t => isWord(t, w.w))) bad(`«${w.w}» — нет в истории`);
     if (!w.tr || !w.ex_ru) bad(`«${w.w}» — нет перевода`);
     if (!pics[w.w]) bad(`«${w.w}» — нет картинки в pics.json`);
+  }
+  // слово истории в изменённой форме: у начального слова есть свой перевод (иначе карточка выходит «freeze — застыла; замерзать…»)
+  for (const k of Object.keys(l.gloss || {})) {
+    const b = dict.f[k];
+    if (b && !irr[k] && !known.has(k) && !core[b] && !known.has(b) && !(l.gloss[b])) bad(`«${k}» — у начального «${b}» нет перевода: добавить в core.json`);
   }
   for (const q of l.questions) if (!(q.a >= 0 && q.a < q.o.length) || new Set(q.o).size !== q.o.length) bad(`вопрос «${q.q}» — нет верного ответа или варианты повторяются`);
 }

@@ -132,7 +132,7 @@ button.row:hover{background:var(--surface-2)}
 .xw{font-size:30px;font-weight:600}
 .xe{font-size:34px}
 .xs{font-size:19px;line-height:1.5}
-.gap{display:inline-block;border-bottom:2px solid var(--accent);color:var(--accent);min-width:60px}
+.gap{display:inline-block;border-bottom:2px solid var(--accent);color:var(--accent)}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .opt{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;min-height:56px;font-weight:600;text-align:center}
 .opt:hover:not(:disabled){border-color:var(--accent)}
@@ -167,11 +167,12 @@ button.row:hover{background:var(--surface-2)}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:2px solid var(--accent);box-shadow:0 -6px 24px rgba(0,0,0,.18);height:200px;padding-bottom:env(safe-area-inset-bottom,0px)}
 .sh-in{display:flex;flex-direction:column;gap:6px;padding-top:12px;height:100%}
 .sw{display:flex;align-items:center;gap:10px}
-.sw b{font-size:22px}
+.sw b{font-size:22px;flex:none;max-width:60%}
+.sw>.meta{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .semo{font-size:22px;margin-right:auto}
 .str{font-size:17px;font-weight:600;min-height:28px;max-height:52px;overflow:auto}
 .str-in{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:6px 10px;min-height:34px}
-.smeta{min-height:1.3em}
+.smeta{height:22px;line-height:22px;overflow:hidden}
 .srow{display:flex;gap:8px}
 .srow #unk{flex:1}
 

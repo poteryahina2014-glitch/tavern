@@ -334,8 +334,8 @@ function toPar(v){
   for(let k=0;k<2;k++){const r=p.getBoundingClientRect();scrollTo(0,scrollY+r.top+v[1]*r.height-parTop())}
 }
 let parT;
-const keepPar=()=>{const m=mode;if(m&&m.k==="lesson"&&m.step===2&&!m.done){m.par=parNow();saveLesson()}};
-addEventListener("scroll",()=>{clearTimeout(parT);const m=mode;if(m&&m.k==="lesson"&&m.step===2&&!m.done)parT=setTimeout(()=>{if(mode===m)keepPar()},300)},{passive:true});
+const keepPar=()=>{const m=mode;if(m&&m.k==="lesson"&&m.step===2&&main.querySelector(".reader")){m.par=parNow();saveLesson()}};
+addEventListener("scroll",()=>{clearTimeout(parT);const m=mode;if(m&&m.k==="lesson"&&m.step===2)parT=setTimeout(()=>{if(mode===m)keepPar()},300)},{passive:true});
 addEventListener("pagehide",keepPar);
 document.addEventListener("visibilitychange",()=>{if(document.hidden)keepPar()});
 // ход непройденного урока — на устройстве (tav:les:<пользователь>), чтобы обновление страницы его не теряло
@@ -368,10 +368,15 @@ function restoreLesson(l){
 function stepsBar(m){return `<div class="steps">${STEPS.map((s,j)=>`<button type="button" data-step="${j}" class="${j===m.step?"cur":j<=m.max?"on":""}" ${j>m.max||j===m.step?"disabled":""}>${s}</button>`).join("")}</div>`}
 function toStep(n){
   const m=mode,l=L[m.id];
-  if(n===1&&(!m.ex||m.xi>=m.ex.length)){m.ex=buildEx(l);m.xi=0}
+  keepPar(); // место в истории — до смены экрана
+  if(n===1){
+    if(!m.ex||m.xi>=m.ex.length){m.ex=buildEx(l);m.xi=0}
+    else if(m.ex[m.xi].pick===m.ex[m.xi].w)m.xi++; // ответила верно и ушла раньше, чем вопрос сменился сам
+  }
   if(n>=3&&!m.qs)m.qs=l.questions.map(q=>({...q,ord:shuffle(q.o.map((_,i)=>i)),pick:null}));
   m.step=n;m.max=Math.max(m.max,n);
   closeSheet();freeze();vLesson();scrollTo(0,0);
+  if(m.step===2)toPar(m.par);
 }
 function vLesson(){
   const m=mode,l=L[m.id];
@@ -433,6 +438,7 @@ const formIn=w=>((w.ex.match(/[A-Za-z]+(?:['’][A-Za-z]+)*/g)||[]).find(t=>isWo
 // части речи, у которых эта форма стоит в примере, потом те же слова с окончанием по правилам. Слова — из этого и пройденных уроков
 const IRRV=new Set(["kneel","bleed","forgive","wolf","prove"]); // окончание по правилам не подходит (сверяет tools/check_lessons.js)
 const VERBY=new Set(["trick","crown","bargain","guard","lock","curse","poison","mask","chain","cage","vow"]); // в уроке существительное, но бывает и глаголом
+const NOPL=new Set(["midnight","moonlight","iron","ale","wine","stew","mercy","revenge","breath","truth"]); // без множественного числа и без a/an
 const isV=s=>/(ть|ться|ти|чь)$/.test(s.split(" ")[0])&&!/([ео]сть|ночь)$/.test(s.split(" ")[0]); // «встать на колени» — глагол, «месть» и «полночь» — нет
 const senses=w=>w.tr.replace(/\(.*?\)/g,"").split(/[,;]/).map(s=>s.trim());
 // форма слова в его примере: "" — начальная, s, ed (и неправильное причастие), ing
@@ -456,7 +462,10 @@ function optText(o,w){
 const optTier=(o,w)=>{const t=formType(w),ok=t?formType(o)===t||optText(o,w)!==o.w:!/[^su]s$/.test(o.w);return !ok?2:canBe(o,wPos(w))?0:1};
 function gapOthers(w,own,pool){
   const r=[],seen=new Set([formIn(w)]);
-  const rank=o=>optTier(o,w)*2+(own.includes(o)?0:1);
+  // хуже всех: слово уже стоит в этом предложении или отсекается артиклем (a ale, a iron)
+  const toks=w.ex.match(/[A-Za-z]+(?:['’][A-Za-z]+)*/g)||[],art=(toks[toks.findIndex(t=>isWord(t,w.w))-1]||"").toLowerCase();
+  const odd=o=>toks.some(t=>isWord(t,o.w))||NOPL.has(o.w)&&(formType(w)==="s"||/^an?$/.test(art))||art==="a"&&/^[aeiou]/.test(o.w)||art==="an"&&/^[^aeiou]/.test(o.w);
+  const rank=o=>optTier(o,w)*4+(odd(o)?2:0)+(own.includes(o)?0:1);
   for(const o of shuffle(pool.filter(o=>o!==w)).sort((a,b)=>rank(a)-rank(b))){
     const t=optText(o,w);if(seen.has(t))continue;
     seen.add(t);r.push(o);if(r.length===3)break;
@@ -479,10 +488,10 @@ function vExercise(top){
   main.innerHTML=top+`<div class="xbar"><div class="bar"><i style="width:${done/total*100}%"></i></div><span class="meta">${done} / ${total}</span></div>
     <section class="xbox">${prompt}</section>
     <div class="opts">${x.opts.map((o,i)=>`<button class="opt ${x.t==="gap"?"en":""} ${!answered?"":o===x.w?"ok":o===x.pick?"bad":""}" data-o="${i}" ${answered?"disabled":""}>${esc(x.t==="tr"?o.tr:optText(o,x.w))}</button>`).join("")}</div>
-    <div class="foot"><span class="meta">${answered&&!right&&!x.redo?`<span title="Вернётся в конце">↻</span>`:""}</span><button class="btn pri" id="next" style="visibility:${answered&&!right?"visible":"hidden"}">Дальше</button></div>`;
+    <div class="foot"><span class="meta">${answered&&!right?`<span title="Вернётся в конце">↻</span>`:""}</span><button class="btn pri" id="next" style="visibility:${answered&&!right?"visible":"hidden"}">Дальше</button></div>`;
   main.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{
     x.pick=x.opts[+b.dataset.o];
-    if(x.pick!==x.w&&!x.redo)m.ex.push({...x,pick:null,redo:true,opts:shuffle(x.opts)});
+    if(x.pick!==x.w)m.ex.push({...x,pick:null,redo:true,opts:shuffle(x.opts)});
     vLesson();
     if(x.pick===x.w)setTimeout(()=>{if(mode===m&&m.step===1&&m.ex[m.xi]===x){m.xi++;vLesson()}},650);
   });
@@ -759,7 +768,7 @@ function editCard(c,after,pre){
 
 /* ---------- справка ---------- */
 const HELP=[
-["Как устроен урок","Урок — 10 новых слов на одну тему и глава общей истории «The Lantern and the Thorn». Сначала смотришь слова с примерами, потом упражнения: выбрать перевод и вставить слово в предложение. Слово с ошибкой вернётся в конце практики ещё раз — об этом говорит значок ↻ внизу слева. В пропуск после ответа встаёт верное слово. Счётчик и полоса — сколько слов пройдено, ошибка их не двигает. На компьютере: 1–4 — вариант, Enter или пробел — «Дальше». После упражнений слова становятся карточками, а дальше — глава истории, где встречаются все эти слова, вопросы по смыслу и оценка, насколько текст понятен.<br>Урок можно прервать: он запоминается на этом устройстве, в списке будет «▶ 7/20» — продолжишь с того же места, в истории — с того же абзаца. ↺ вверху — начать сначала. Шаги вверху нажимаются: можно вернуться к уже открытым, например из «Вопросов» к истории. Пройденный урок (✓) открывается сразу с истории; 📖 рядом — когда текст вернётся на перечитывание."],
+["Как устроен урок","Урок — 10 новых слов на одну тему и глава общей истории «The Lantern and the Thorn». Сначала смотришь слова с примерами, потом упражнения: выбрать перевод и вставить слово в предложение. Ошибки возвращаются в конец, пока не ответишь верно, — об этом говорит значок ↻ внизу слева. В пропуск после ответа встаёт верное слово. Счётчик и полоса — сколько вопросов пройдено, ошибка их не двигает. На компьютере: 1–4 — вариант, Enter или пробел — «Дальше», Esc — выйти. После упражнений слова становятся карточками, а дальше — глава истории, где встречаются все эти слова, вопросы по смыслу и оценка, насколько текст понятен.<br>Урок можно прервать: он запоминается на этом устройстве, в списке будет «▶ 7/20» — продолжишь с того же места, в истории — с того же абзаца. ↺ вверху — начать сначала. Шаги вверху нажимаются: можно вернуться к уже открытым, например из «Вопросов» к истории — она откроется там, где остановилась. Пройденный урок (✓) открывается сразу с истории; 📖 рядом — когда текст вернётся на перечитывание."],
 ["Повторение слов","Каждый день на «Сегодня» — только слова, у которых подошёл срок. Посмотри на слово, вспомни перевод, нажми «Показать» и честно оцени:<br>• <b>Не помню</b> — слово вернётся в конце этого же повторения и завтра;<br>• <b>Трудно</b> — промежуток чуть растёт;<br>• <b>Помню</b> — промежуток растёт в 2–2,5 раза;<br>• <b>Легко</b> — ещё сильнее.<br>Под кнопками видно, когда слово придёт снова. Новое слово: завтра → через несколько дней → неделя → месяц… Если пропустила день и всё равно помнишь, часть опоздания засчитывается. Полоса вверху растёт, когда слово пройдено; «Не помню» её не двигает. На компьютере: пробел — показать, 1–4 — оценки, Esc — выйти."],
 ["Читалка","Щёлкни на любое слово — внизу появится перевод (если слово есть в словаре или в твоих карточках) и кнопка 🌐 переводчика. <b>❓ Не понимаю</b>: если слова ещё нет в карточках, оно станет карточкой вместе с предложением из текста (перевод можно вписать сразу или потом в «Слова»); если уже есть — начнёт приходить чаще. Повторный щелчок по «Не понимаю» снимает отметку. Если слово стоит в изменённой форме (went), видно и начальное («→ go — идти»), карточка будет на него. Подчёркнутые слова — слова урока."],
 ["Перечитывание текстов","После каждого текста ты отмечаешь, насколько он понятен. 😕 не поняла — текст вернётся завтра, 🤔 частично — через 3 дня, 😊 понятно — через неделю, потом всё реже. Тексты, которые пора перечитать, — на «Сегодня» в разделе «Перечитать». Как с песней: раз за разом понятно всё больше."],
@@ -797,6 +806,7 @@ $("#gear").onclick=()=>{
 let modalDirty=null; // есть ли несохранённое: тогда Esc и щелчок мимо сначала спрашивают
 function openModal(html,cls="",dirty=null){
   modalDirty=dirty;
+  if(document.activeElement)document.activeElement.blur(); // иначе после закрытия Enter нажимает ту же кнопку ещё раз
   $("#modalRoot").innerHTML=`<div class="back"><div class="modal ${cls}" role="dialog" aria-modal="true">${html}</div></div>`;
   $("#modalRoot .back").addEventListener("mousedown",e=>{if(e.target.classList.contains("back")){e.preventDefault();leaveModal()}});
   const f=$("#modalRoot [autofocus]");if(f)f.focus();
