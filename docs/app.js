@@ -93,6 +93,7 @@ async function all(t,key="id",more=q=>q){
   }
   const seen=new Set();return rows.filter(x=>!seen.has(x[key])&&seen.add(x[key])); // строка, добавленная во время загрузки, могла прийти дважды
 }
+const noTable=e=>/^(42P01|PGRST205)$/.test(e&&e.code||""); // таблиц правда нет — SQL ещё не запускали
 async function load(){
   try{
     const [cards,texts,lessons,books,log]=await Promise.all([all("t_cards"),all("t_texts"),all("t_lessons","lesson"),all("t_books"),all("t_log","id",q=>q.gte("day",addDays(today(),-30)))]);
@@ -100,7 +101,11 @@ async function load(){
     render();loadBig();
   }catch(e){
     console.error(e);
-    main.innerHTML=`<div class="empty"><b>База ещё не готова</b>Supabase → SQL Editor → <code>001_tavern.sql</code><br><small>${esc(e.message||"")}</small></div>`;
+    if(S){toast("Не удалось обновить: "+(noTable(e)?e.message:"нет связи"));return} // загруженное раньше остаётся на экране
+    main.innerHTML=noTable(e)
+      ?`<div class="empty"><b>База ещё не готова</b>Supabase → SQL Editor → <code>001_tavern.sql</code><br><small>${esc(e.message||"")}</small></div>`
+      :`<div class="empty"><b>Нет связи</b><small>${esc(e.message||"")}</small><button class="btn" id="again" style="align-self:center">Повторить</button></div>`;
+    if($("#again"))$("#again").onclick=()=>{$("#again").disabled=true;load()};
   }
 }
 async function W(p){try{return ok(await p)}catch(e){console.error(e);toast(/duplicate key/i.test(e&&e.message||"")?"Такое уже есть":"Не удалось сохранить"+(e&&e.message?": "+e.message:" — проверь интернет"));throw e}}
@@ -131,7 +136,7 @@ const forgot=c=>({ivl:1,due:addDays(today(),1),lapses:(c.lapses||0)+1,ease:Math.
 const dueCards=()=>S.cards.filter(c=>c.due<=today());
 // тексты: не поняла → завтра, частично → через 3 дня, понятно → 7 дней, потом ×2,5
 function nextText(t,r){const p=t&&t.ivl||0;const ivl=r==="no"?1:r==="part"?3:Math.min(180,p>=7?Math.round(p*2.5):7);return {ivl,due:addDays(today(),ivl)}}
-const dueTexts=()=>S.texts.filter(t=>t.due&&t.due<=today());
+const dueTexts=()=>S.texts.filter(t=>t.due&&t.due<=today()&&(!t.ref.startsWith("book:")||S.books.some(b=>b.id===t.ref.split(":")[1]))); // книги уже нет — перечитывать нечего
 async function rateText(ref,title,r){
   const t=S.texts.find(x=>x.ref===ref),n=nextText(t,r);
   const row={ref,title,rating:r,...n,reads:(t?t.reads:0)+1,last_read:today()};
@@ -711,10 +716,14 @@ function vBook(){
   });
   $("#bdel").onclick=async()=>{
     if(!confirm(`Удалить «${b.title}» из Таверны? Карточки слов останутся.`))return;
-    await W(sb.from("t_books").delete().eq("id",b.id));
-    const refs=S.texts.filter(t=>t.ref.startsWith(`book:${b.id}:`));
-    if(refs.length)await W(sb.from("t_texts").delete().in("id",refs.map(t=>t.id)));
-    S.books=S.books.filter(x=>x.id!==b.id);S.texts=S.texts.filter(t=>!refs.includes(t));quit();
+    const pre=`book:${b.id}:`; // оценки частей — одним условием (список номеров у длинной книги не влезал в адрес) и раньше книги: оборвалось — можно повторить
+    $("#bdel").disabled=true;
+    try{
+      await W(sb.from("t_texts").delete().like("ref",pre+"%"));
+      S.texts=S.texts.filter(t=>!t.ref.startsWith(pre));
+      await W(sb.from("t_books").delete().eq("id",b.id));
+    }catch(e){if($("#bdel"))$("#bdel").disabled=false;return}
+    S.books=S.books.filter(x=>x.id!==b.id);quit();
   };
 }
 
